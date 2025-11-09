@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id           String    @id @default(uuid())
+  name         String
+  cnpj         String?   @unique
+  fantasyName  String?   @map("fantasy_name")
+  logoUrl      String?   @map("logo_url")
+  notes        String?
+  contactName  String?   @map("contact_name")
+  contactPhone String?   @map("contact_phone")
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  Client       Client[]
+  Admin        Admin[]
+  Address      Address[]
+
+  @@map("tenants")
+}
+
+model Address {
+  id           String  @id @default(uuid())
+  tenantId     String  @map("tenant_id")
+  tenant       Tenant  @relation(fields: [tenantId], references: [id])
+  street       String?
+  number       String?
+  complement   String?
+  neighborhood String?
+  city         String?
+  state        String?
+  country      String?
+  zipCode      String?
+
+  @@map("addresses")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("roles")
+}
+
+model User {
+  id              String         @id @default(uuid())
+  roleId          String         @map("role_id")
+  role            Role           @relation(fields: [roleId], references: [id])
+  firstName       String         @map("first_name")
+  lastName        String         @map("last_name")
+  phone           String?
+  email           String         @unique
+  cpf             String?        @unique
+  birthDate       DateTime?      @map("birth_date")
+  password        String
+  token           String?
+  firstLogin      Boolean        @default(true)
+  active          Boolean        @default(true)
+  lastLoginAt     DateTime?      @map("last_login_at")
+  recoveryCode    String?        @map("recovery_code")
+  loginAttempts   Int?           @map("login_attempts")
+  passwordResetAt DateTime?      @map("password_reset_at")
+  refreshToken    String?        @map("refresh_token")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  deletedAt       DateTime?      @map("deleted_at")
+  logs            Log[]
+  queries         QueryHistory[]
+  Client          Client[]
+  Admin           Admin[]
+
+  @@map("users")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  Tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId  String?
+
+  @@map("admins")
+}
+
+model Client {
+  id           String         @id @default(uuid())
+  tenantId     String         @map("tenant_id")
+  tenant       Tenant         @relation(fields: [tenantId], references: [id])
+  userId       String         @map("user_id")
+  user         User           @relation(fields: [userId], references: [id])
+  name         String
+  phone        String?
+  email        String         @unique
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  Subscription Subscription[]
+  Payment      Payment[]
+
+  @@map("clients")
+}
+
+model Log {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  action      String
+  description String?
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("logs")
+}
+
+model QueryHistory {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+  targetId     String   @map("target_id")
+  endpoint     String
+  responseCode Int?     @map("response_code")
+  responseData Json?    @map("response_data")
+  status       String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("query_histories")
+}
+
+model Plan {
+  id           String         @id @default(uuid())
+  name         String
+  description  String?
+  price        Float
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  Subscription Subscription[]
+  Payment      Payment[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  clientId  String   @map("client_id")
+  client    Client   @relation(fields: [clientId], references: [id])
+  planId    String   @map("plan_id")
+  plan      Plan     @relation(fields: [planId], references: [id])
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("subscriptions")
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  clientId    String   @map("client_id")
+  client      Client   @relation(fields: [clientId], references: [id])
+  planId      String   @map("plan_id")
+  plan        Plan     @relation(fields: [planId], references: [id])
+  amount      Float    @map("amount")
+  paymentDate DateTime @map("payment_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("payments")
+}

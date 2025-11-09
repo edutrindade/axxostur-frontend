@@ -1,0 +1,118 @@
+.vite-error-overlay {
+   background: rgba(0, 0, 0, 0.95) !important;
+   color: #fff !important;
+   font-family: "Geologica", "Monaco", "Menlo", "Ubuntu Mono", monospace !important;
+}
+
+.vite-error-overlay .window {
+   background: #1a1a1a !important;
+   border: 1px solid #333 !important;
+   border-radius: 8px !important;
+   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4) !important;
+}
+
+.vite-error-overlay .message {
+   color: #ff6b6b !important;
+   font-weight: 600 !important;
+   font-size: 16px !important;
+   line-height: 1.5 !important;
+   margin-bottom: 16px !important;
+}
+
+.vite-error-overlay .plugin {
+   color: #ffd93d !important;
+   font-weight: 500 !important;
+}
+
+.vite-error-overlay .file {
+   color: #6bcf7f !important;
+   font-weight: 500 !important;
+}
+
+.vite-error-overlay .frame {
+   color: #74c0fc !important;
+}
+
+.vite-error-overlay .stack {
+   background: #2d2d2d !important;
+   border: 1px solid #404040 !important;
+   border-radius: 4px !important;
+   padding: 12px !important;
+   margin: 8px 0 !important;
+   font-size: 14px !important;
+   line-height: 1.4 !important;
+   overflow-x: auto !important;
+}
+
+.vite-error-overlay .tip {
+   background: #1e3a8a !important;
+   border-left: 4px solid #3b82f6 !important;
+   color: #dbeafe !important;
+   padding: 12px 16px !important;
+   margin: 16px 0 !important;
+   border-radius: 0 4px 4px 0 !important;
+}
+
+.vite-error-overlay .code {
+   background: #2d2d2d !important;
+   border: 1px solid #404040 !important;
+   border-radius: 4px !important;
+   padding: 16px !important;
+   margin: 12px 0 !important;
+   overflow-x: auto !important;
+}
+
+.vite-error-overlay .line-number {
+   color: #666 !important;
+   margin-right: 16px !important;
+   user-select: none !important;
+}
+
+.vite-error-overlay .error-line {
+   background: rgba(255, 107, 107, 0.1) !important;
+   border-left: 3px solid #ff6b6b !important;
+   padding-left: 8px !important;
+   margin-left: -8px !important;
+}
+
+/* Close button styling */
+.vite-error-overlay .window .close {
+   position: absolute !important;
+   top: 12px !important;
+   right: 12px !important;
+   background: #ff6b6b !important;
+   color: white !important;
+   border: none !important;
+   border-radius: 50% !important;
+   width: 24px !important;
+   height: 24px !important;
+   cursor: pointer !important;
+   font-size: 14px !important;
+   display: flex !important;
+   align-items: center !important;
+   justify-content: center !important;
+   transition: background-color 0.2s !important;
+}
+
+.vite-error-overlay .window .close:hover {
+   background: #ff5252 !important;
+}
+
+/* Scrollbar styling */
+.vite-error-overlay ::-webkit-scrollbar {
+   width: 8px !important;
+   height: 8px !important;
+}
+
+.vite-error-overlay ::-webkit-scrollbar-track {
+   background: #2d2d2d !important;
+}
+
+.vite-error-overlay ::-webkit-scrollbar-thumb {
+   background: #555 !important;
+   border-radius: 4px !important;
+}
+
+.vite-error-overlay ::-webkit-scrollbar-thumb:hover {
+   background: #666 !important;
+}

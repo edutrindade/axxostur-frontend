@@ -1,0 +1,5 @@
+#root {
+  @apply h-full;
+  @apply w-full;
+  margin: 0 auto;
+}
