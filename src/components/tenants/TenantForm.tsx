@@ -73,116 +73,58 @@ export const TenantForm = ({ onSuccess, initialData }: TenantFormProps) => {
     <form onSubmit={handleSubmit} className="space-y-4 mt-6">
       <div className="space-y-2">
         <Label htmlFor="name">Razão Social *</Label>
-        <Input
-          id="name"
-          leftIcon="building"
-          value={formData.name || ""}
-          onChange={(e) => handleInputChange("name", e.target.value)}
-          placeholder="Digite a razão social"
-          required
-        />
+        <Input id="name" leftIcon="building" value={formData.name || ""} onChange={(e) => handleInputChange("name", e.target.value)} placeholder="Digite a razão social" required />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="cnpj">CNPJ *</Label>
-        <Input
-          id="cnpj"
-          leftIcon="creditCard"
-          value={formatCnpj(formData.cnpj || "")}
-          onChange={(e) => handleInputChange("cnpj", e.target.value)}
-          placeholder="00.000.000/0000-00"
-          required
-        />
+        <Input id="cnpj" leftIcon="creditCard" value={formatCnpj(formData.cnpj || "")} onChange={(e) => handleInputChange("cnpj", e.target.value)} placeholder="00.000.000/0000-00" required />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="fantasyName">Nome Fantasia</Label>
-        <Input
-          id="fantasyName"
-          leftIcon="tag"
-          value={formData.fantasyName || ""}
-          onChange={(e) => handleInputChange("fantasyName", e.target.value)}
-          placeholder="Digite o nome fantasia"
-        />
+        <Input id="fantasyName" leftIcon="tag" value={formData.fantasyName || ""} onChange={(e) => handleInputChange("fantasyName", e.target.value)} placeholder="Digite o nome fantasia" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="cnae">CNAE</Label>
-          <Input
-            id="cnae"
-            leftIcon="file"
-            value={formData.cnae || ""}
-            onChange={(e) => handleInputChange("cnae", e.target.value)}
-            placeholder="Digite o CNAE"
-          />
+          <Input id="cnae" leftIcon="file" value={formData.cnae || ""} onChange={(e) => handleInputChange("cnae", e.target.value)} placeholder="Digite o CNAE" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="cnaeSecundario">CNAE Secundário</Label>
-          <Input
-            id="cnaeSecundario"
-            leftIcon="file"
-            value={formData.cnaeSecundario || ""}
-            onChange={(e) => handleInputChange("cnaeSecundario", e.target.value)}
-            placeholder="Digite o CNAE secundário"
-          />
+          <Input id="cnaeSecundario" leftIcon="file" value={formData.cnaeSecundario || ""} onChange={(e) => handleInputChange("cnaeSecundario", e.target.value)} placeholder="Digite o CNAE secundário" />
         </div>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="logoUrl">Logomarca</Label>
-        <Input
-          id="logoUrl"
-          leftIcon="image"
-          value={formData.logoUrl || ""}
-          onChange={(e) => handleInputChange("logoUrl", e.target.value)}
-          placeholder="https://..."
-        />
+        <Input id="logoUrl" leftIcon="image" value={formData.logoUrl || ""} onChange={(e) => handleInputChange("logoUrl", e.target.value)} placeholder="https://..." />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="notes">Observações</Label>
-        <Input
-          id="notes"
-          leftIcon="comment"
-          value={formData.notes || ""}
-          onChange={(e) => handleInputChange("notes", e.target.value)}
-          placeholder="Anotações sobre a empresa"
-        />
+        <Input id="notes" leftIcon="comment" value={formData.notes || ""} onChange={(e) => handleInputChange("notes", e.target.value)} placeholder="Anotações sobre a empresa" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="contactName">Contato *</Label>
-          <Input
-            id="contactName"
-            leftIcon="userCheck"
-            value={formData.contactName || ""}
-            onChange={(e) => handleInputChange("contactName", e.target.value)}
-            placeholder="Nome do contato"
-            required
-          />
+          <Input id="contactName" leftIcon="userCheck" value={formData.contactName || ""} onChange={(e) => handleInputChange("contactName", e.target.value)} placeholder="Nome do contato" required />
         </div>
         <div className="space-y-2">
           <Label htmlFor="contactPhone">Telefone *</Label>
-          <Input
-            id="contactPhone"
-            leftIcon="phone"
-            value={formatPhone(formData.contactPhone || "")}
-            onChange={(e) => handleInputChange("contactPhone", e.target.value)}
-            placeholder="(11) 99999-9999"
-            required
-          />
+          <Input id="contactPhone" leftIcon="phone" value={formatPhone(formData.contactPhone || "")} onChange={(e) => handleInputChange("contactPhone", e.target.value)} placeholder="(11) 99999-9999" required />
         </div>
       </div>
 
       <div className="flex gap-3 pt-4">
         <Button type="submit" className="flex-1" disabled={isSubmitting}>
           <Icon name="check" size={16} className="mr-2 text-white" />
-          <span className="text-white font-bold text-lg">{initialData ? "Atualizar" : "Cadastrar"}</span>
+          <span className="text-white font-bold">{initialData ? "Atualizar" : "Cadastrar"}</span>
         </Button>
         <Button type="button" variant="outline" className="flex-1 text-slate-700" onClick={() => onSuccess?.()}>
-          <span className="font-bold text-lg">Cancelar</span>
+          <span className="font-bold">Cancelar</span>
         </Button>
       </div>
     </form>

@@ -8,44 +8,52 @@ import { type Client } from "@/services/clients";
 
 interface ColumnProps {
   onEdit: (client: Client) => void;
+  onView: (client: Client) => void;
 }
 
-const getStatusBadge = (active: boolean) => {
-  return (
-    <Badge variant={active ? "default" : "secondary"}>
-      {active ? "Ativo" : "Inativo"}
-    </Badge>
-  );
-};
-
-export const createColumns = ({ onEdit }: ColumnProps): ColumnDef<Client>[] => [
+export const createColumns = ({ onEdit, onView }: ColumnProps): ColumnDef<Client>[] => [
   {
-    accessorKey: "tenantName",
+    accessorKey: "tenant.name",
     header: "Nome",
+    cell: ({ row }) => {
+      const name = row.original.tenant.name;
+      return <span className="font-bold text-slate-900">{name}</span>;
+    },
   },
   {
-    accessorKey: "tenantCnpj",
+    accessorKey: "tenant.cnpj",
     header: "CNPJ",
-    cell: ({ row }) => formatCnpj(row.getValue("tenantCnpj") as string),
+    cell: ({ row }) => {
+      const cnpj = row.original.tenant.cnpj;
+      return <span className="text-slate-800 font-semibold">{formatCnpj(cnpj)}</span>;
+    },
   },
   {
     accessorKey: "email",
     header: "E-mail",
+    cell: ({ row }) => {
+      const email = row.getValue("email") as string;
+      return <span className="text-slate-800 font-semibold">{email}</span>;
+    },
   },
   {
     accessorKey: "phone",
     header: "Telefone",
     cell: ({ row }) => {
-      const phone = row.getValue("phone") as string | undefined;
-      return phone ? formatPhone(phone) : "-";
+      const phone = row.getValue("phone") as string;
+      return <span className="text-slate-800 font-semibold">{formatPhone(phone)}</span>;
     },
   },
   {
-    accessorKey: "active",
+    accessorKey: "tenant.active",
     header: "Status",
     cell: ({ row }) => {
-      const active = row.getValue("active") as boolean;
-      return getStatusBadge(active);
+      const active = row.original.tenant.active;
+      return (
+        <Badge variant={active ? "success" : "secondary"} className={`font-bold text-sm px-3 py-1 ${active ? "bg-green-100 text-green-800 border border-green-300" : "bg-red-100 text-red-800 border border-red-300"}`}>
+          {active ? "Ativo" : "Inativo"}
+        </Badge>
+      );
     },
   },
   {
@@ -58,12 +66,18 @@ export const createColumns = ({ onEdit }: ColumnProps): ColumnDef<Client>[] => [
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-10 w-10 p-0 hover:bg-yellow-100 hover:text-yellow-800 text-slate-700 rounded-lg transition-all duration-200 border border-slate-200 hover:border-yellow-300"
-                  onClick={() => onEdit(client)}
-                >
+                <Button variant="ghost" size="sm" className="h-10 w-10 p-0 hover:bg-blue-100 hover:text-blue-800 text-slate-700 rounded-lg transition-all duration-200 border border-slate-200 hover:border-blue-300" onClick={() => onView(client)}>
+                  <Icon name="eye" size={18} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="font-semibold">Visualizar</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-10 w-10 p-0 hover:bg-yellow-100 hover:text-yellow-800 text-slate-700 rounded-lg transition-all duration-200 border border-slate-200 hover:border-yellow-300" onClick={() => onEdit(client)}>
                   <Icon name="edit" size={18} />
                 </Button>
               </TooltipTrigger>

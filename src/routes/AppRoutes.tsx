@@ -16,48 +16,41 @@ import TaxConsultPage from "@/pages/TaxConsultPage";
 // Drawer-based forms: standalone EnterpriseForm page removed
 
 const AppRoutes = () => {
-	const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
-	return (
-		<BrowserRouter>
-			<Routes>
-				{/* Rotas públicas */}
-				<Route
-					path="/login"
-					element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
-				/>
-				<Route
-					path="/forgot-password"
-					element={
-						isAuthenticated ? <Navigate to="/" replace /> : <ForgotPassword />
-					}
-				/>
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Rotas públicas */}
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+        <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/" replace /> : <ForgotPassword />} />
 
-				{/* Rotas privadas */}
-				<Route
-					path="/"
-					element={
-						<PrivateRoute>
-							<Dashboard />
-						</PrivateRoute>
-					}
-				>
-				<Route index element={<Home />} />
-				<Route path="users" element={<Users />} />
-				<Route path="clients" element={<Clients />} />
-				<Route path="clients/new" element={<ClientCreate />} />
-				<Route path="enterprises" element={<Enterprises />} />
-				<Route path="tenants" element={<Tenants />} />
-                {/* Forms handled via drawers inside Tenants and Enterprises pages */}
-				<Route path="tax" element={<TaxConsultPage />} />
-					<Route path="reports" element={<Reports />} />
-				</Route>
+        {/* Rotas privadas */}
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<Home />} />
+          <Route path="users" element={<Users />} />
+          <Route path="clients" element={<Clients />} />
+          <Route path="clients/new" element={<ClientCreate />} />
+          <Route path="clients/edit" element={<ClientCreate />} />
+          <Route path="enterprises" element={<Enterprises />} />
+          <Route path="tenants" element={<Tenants />} />
+          {/* Forms handled via drawers inside Tenants and Enterprises pages */}
+          <Route path="tax" element={<TaxConsultPage />} />
+          <Route path="reports" element={<Reports />} />
+        </Route>
 
-				{/* Rota de fallback */}
-				<Route path="*" element={<Navigate to="/" replace />} />
-			</Routes>
-		</BrowserRouter>
-	);
+        {/* Rota de fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 };
 
 export default AppRoutes;

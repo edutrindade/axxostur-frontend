@@ -1,76 +1,92 @@
 import { api } from "./api";
 
-export interface ApiClientItem {
+export interface TenantInfo {
   id: string;
-  tenantName: string;
-  tenantCnpj: string;
-  tenantFantasyName: string | null;
-  tenantLogoUrl: string | null;
-  tenantNotes: string | null;
-  street: string | null;
-  number: string | null;
-  complement: string | null;
-  neighborhood: string | null;
-  city: string | null;
-  state: string | null;
-  country: string | null;
-  zipCode: string | null;
-  firstName: string;
-  lastName: string | null;
-  phone: string | null;
-  email: string;
-  cpf: string | null;
+  name: string;
+  cnpj: string;
+  cnae: string | null;
+  cnaeSecundario: string | null;
+  iMendesPassword: string | null;
+  fantasyName: string;
+  logoUrl: string;
+  notes: string;
+  contactName: string;
+  contactPhone: string;
   active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  address?: AddressInfo[];
+}
+
+export interface AddressInfo {
+  id: string;
+  tenantId: string;
+  street: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+}
+
+export interface UserInfo {
+  id: string;
+  roleId: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  cpf: string;
+  birthDate: string | null;
+  firstLogin: boolean;
+  active: boolean;
+  lastLoginAt: string | null;
+  loginAttempts: number | null;
+  passwordResetAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface ApiClientItem {
+  id: string;
+  tenantId: string;
+  userId: string;
+  name: string;
+  phone: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+  tenant: TenantInfo;
+  user: UserInfo;
+}
+
 export interface Client {
   id: string;
-  tenantName: string;
-  tenantCnpj: string;
-  tenantFantasyName?: string;
-  tenantLogoUrl?: string;
-  tenantNotes?: string;
-  street?: string;
-  number?: string;
-  complement?: string;
-  neighborhood?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  zipCode?: string;
-  firstName: string;
-  lastName?: string;
-  phone?: string;
+  tenantId: string;
+  userId: string;
+  name: string;
+  phone: string;
   email: string;
-  cpf?: string;
-  active: boolean;
   createdAt: string;
+  updatedAt: string;
+  tenant: TenantInfo;
+  user: UserInfo;
 }
 
 const mapApiClientToClient = (c: ApiClientItem): Client => ({
   id: c.id,
-  tenantName: c.tenantName,
-  tenantCnpj: c.tenantCnpj,
-  tenantFantasyName: c.tenantFantasyName ?? undefined,
-  tenantLogoUrl: c.tenantLogoUrl ?? undefined,
-  tenantNotes: c.tenantNotes ?? undefined,
-  street: c.street ?? undefined,
-  number: c.number ?? undefined,
-  complement: c.complement ?? undefined,
-  neighborhood: c.neighborhood ?? undefined,
-  city: c.city ?? undefined,
-  state: c.state ?? undefined,
-  country: c.country ?? undefined,
-  zipCode: c.zipCode ?? undefined,
-  firstName: c.firstName,
-  lastName: c.lastName ?? undefined,
-  phone: c.phone ?? undefined,
+  tenantId: c.tenantId,
+  userId: c.userId,
+  name: c.name,
+  phone: c.phone,
   email: c.email,
-  cpf: c.cpf ?? undefined,
-  active: c.active,
   createdAt: c.createdAt,
+  updatedAt: c.updatedAt,
+  tenant: c.tenant,
+  user: c.user,
 });
 
 export interface ListClientsParams {
@@ -86,19 +102,16 @@ export interface PaginatedClientsResponse {
   limit: number;
 }
 
-export const listClients = async (
-  { page = 1, limit = 20, search }: ListClientsParams = {}
-): Promise<PaginatedClientsResponse> => {
+export const listClients = async ({ page = 1, limit = 20, search }: ListClientsParams = {}): Promise<PaginatedClientsResponse> => {
   const params: Record<string, string | number> = { page, limit };
   if (search) params.search = search;
 
-  const { data } = await api.get<ApiClientItem[]>("/clients", { params });
-  const total = Array.isArray(data) ? data.length : 0;
+  const { data } = await api.get<{ items: ApiClientItem[]; total: number; page: number; limit: number }>("/clients", { params });
   return {
-    items: (Array.isArray(data) ? data : []).map(mapApiClientToClient),
-    total,
-    page,
-    limit,
+    items: data.items.map(mapApiClientToClient),
+    total: data.total,
+    page: data.page,
+    limit: data.limit,
   };
 };
 
@@ -108,29 +121,72 @@ export interface CreateClientPayload {
   tenantFantasyName: string;
   tenantLogoUrl: string;
   tenantNotes: string;
-  street: string;
-  number: string;
-  complement: string;
-  neighborhood: string;
-  city: string;
-  state: string;
-  country: string;
-  zipCode: string;
+  tenantContactName: string;
+  tenantContactPhone: string;
+  address: {
+    street: string;
+    number: string;
+    complement: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
+  };
   firstName: string;
   lastName: string;
   phone: string;
   email: string;
   cpf: string;
+  name: string;
 }
 
-export const createClient = async (
-  payload: CreateClientPayload
-): Promise<Client> => {
+export const createClient = async (payload: CreateClientPayload): Promise<Client> => {
   const { data } = await api.post<ApiClientItem>("/clients", payload);
   return mapApiClientToClient(data);
 };
 
 export const getClientById = async (id: string): Promise<Client> => {
   const { data } = await api.get<ApiClientItem>(`/clients/${id}`);
+  return mapApiClientToClient(data);
+};
+
+export const getClientWithAddress = async (tenantId: string): Promise<AddressInfo | null> => {
+  try {
+    const { data } = await api.get<AddressInfo>(`/addresses/tenant/${tenantId}`);
+    return data;
+  } catch {
+    return null;
+  }
+};
+
+export interface UpdateClientPayload {
+  tenantName?: string;
+  tenantCnpj?: string;
+  tenantFantasyName?: string;
+  tenantLogoUrl?: string;
+  tenantNotes?: string;
+  tenantContactName?: string;
+  tenantContactPhone?: string;
+  address?: {
+    street?: string;
+    number?: string;
+    complement?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zipCode?: string;
+  };
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  email?: string;
+  cpf?: string;
+  name?: string;
+}
+
+export const updateClient = async (id: string, payload: UpdateClientPayload): Promise<Client> => {
+  const { data } = await api.patch<ApiClientItem>(`/clients/${id}`, payload);
   return mapApiClientToClient(data);
 };
