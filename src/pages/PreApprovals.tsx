@@ -8,6 +8,7 @@ import { PreApprovalDetailsModal } from "@/components/preapprovals/PreApprovalDe
 import { listPendingClients, approveClient, rejectClient, type Client } from "@/services/clients";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Icon } from "@/components/ui/icon";
 
 const PreApprovals = () => {
   const queryClient = useQueryClient();
@@ -116,12 +117,12 @@ const PreApprovals = () => {
 
   return (
     <>
-      <AppHeader title="Aprovação de Pré-Cadastros" showActionButton={false} />
+      <AppHeader title="Aprovação de Pré-Cadastros" showActionButton={false} subtitle="Visualize e gerencie os pré-cadastros de clientes pendentes de aprovação" />
 
       <div className="flex flex-1 flex-col gap-6 p-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-800">Cadastros Pendentes</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-800">Aprovações Pendentes</h2>
             {total > 0 && (
               <span className="bg-amber-100 text-amber-800 text-sm font-bold px-3 py-1 rounded-full border border-amber-300">
                 {total} {total === 1 ? "pendente" : "pendentes"}
@@ -132,41 +133,70 @@ const PreApprovals = () => {
         </div>
 
         <div className="space-y-4">
-          <DataTable columns={columns} data={clients} isLoading={isLoading} />
-
-          <PreApprovalDetailsModal client={selectedClient} open={isModalOpen} onOpenChange={setIsModalOpen} onApprove={handleApprove} onReject={handleReject} />
-
-          {!isLoading && totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-6 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border-2 border-slate-200 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <p className="text-sm font-bold text-slate-800">Itens por página</p>
-                <select
-                  value={limit}
-                  onChange={(e) => {
-                    setLimit(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                  className="border border-slate-300 rounded-lg px-2 py-1"
-                >
-                  {[10, 20, 50].map((size) => (
-                    <option key={size} value={size}>
-                      {size}
-                    </option>
-                  ))}
-                </select>
+          {!isLoading && clients.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 px-6">
+              <div className="relative mb-8">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+                <div className="relative bg-gradient-to-br from-blue-50 to-purple-50 rounded-full p-8 border-2 border-blue-200/50 shadow-lg">
+                  <Icon name="check" size={64} className="text-blue-600" />
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
-                  Anterior
-                </Button>
-                <span className="px-3 py-1 text-slate-700 font-semibold">
-                  {currentPage} / {totalPages}
-                </span>
-                <Button variant="outline" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
-                  Próximo
-                </Button>
+
+              <h3 className="text-3xl font-bold text-slate-800 mb-3 text-center">Tudo em dia! 🎉</h3>
+
+              <p className="text-lg text-slate-600 mb-2 text-center max-w-md">No momento não há nenhum cadastro pendente de aprovação.</p>
+
+              <p className="text-base text-slate-500 text-center max-w-md mb-8">Você será notificado automaticamente quando uma nova solicitação de pré-cadastro chegar.</p>
+
+              <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200/50 shadow-sm">
+                <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
+                  <Icon name="bell" size={20} className="text-blue-600" />
+                </div>
+                <div className="text-sm">
+                  <p className="font-bold text-slate-800">Notificações ativas</p>
+                  <p className="text-slate-600">Você receberá um alerta assim que houver novos cadastros</p>
+                </div>
               </div>
             </div>
+          ) : (
+            <>
+              <DataTable columns={columns} data={clients} isLoading={isLoading} />
+
+              <PreApprovalDetailsModal client={selectedClient} open={isModalOpen} onOpenChange={setIsModalOpen} onApprove={handleApprove} onReject={handleReject} />
+
+              {!isLoading && totalPages > 1 && (
+                <div className="flex items-center justify-between px-6 py-6 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border-2 border-slate-200 shadow-sm">
+                  <div className="flex items-center space-x-3">
+                    <p className="text-sm font-bold text-slate-800">Itens por página</p>
+                    <select
+                      value={limit}
+                      onChange={(e) => {
+                        setLimit(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="border border-slate-300 rounded-lg px-2 py-1"
+                    >
+                      {[10, 20, 50].map((size) => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                      Anterior
+                    </Button>
+                    <span className="px-3 py-1 text-slate-700 font-semibold">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <Button variant="outline" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                      Próximo
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

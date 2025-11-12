@@ -270,70 +270,73 @@ const Users = () => {
 
   return (
     <>
-      <AppHeader title="Gerenciamento de Usuários" showActionButton={false} />
+      <AppHeader title="Gerenciamento de Usuários" showActionButton={false} subtitle="Gerencie os usuários da sua aplicação." />
 
-      <div className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-        <div className="ml-auto flex items-center gap-3">
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={handleNewUser}>
-              <Icon name="plus" size={20} className="mr-2 text-white" />
-              <span className="text-white font-bold text-md">Novo Usuário</span>
-            </Button>
-            <SheetContent className="min-w-[400px] sm:min-w-[540px] p-4">
-              <SheetHeader>
-                <SheetTitle className="text-xl">{editingUser ? "Editar Usuário" : "Cadastrar Novo Usuário"}</SheetTitle>
-                <SheetDescription>{editingUser ? "Atualize os dados do usuário." : "Preencha os dados para cadastrar um novo usuário administrador."}</SheetDescription>
-              </SheetHeader>
-              <form onSubmit={handleSubmit} className="space-y-4 mt-6">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">Nome *</Label>
-                  <Input id="firstName" leftIcon="userPlus" value={formData.firstName} onChange={(e) => handleInputChange("firstName", e.target.value)} placeholder="Digite o nome" required />
-                </div>
+      {/* <div className="flex h-16 shrink-0 items-center gap-2 border-b px-4"> */}
+      <div className="ml-auto flex items-center gap-3">
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetContent className="min-w-[400px] sm:min-w-[540px] p-4">
+            <SheetHeader>
+              <SheetTitle className="text-xl">{editingUser ? "Editar Usuário" : "Cadastrar Novo Usuário"}</SheetTitle>
+              <SheetDescription>{editingUser ? "Atualize os dados do usuário." : "Preencha os dados para cadastrar um novo usuário administrador."}</SheetDescription>
+            </SheetHeader>
+            <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">Nome *</Label>
+                <Input id="firstName" leftIcon="userPlus" value={formData.firstName} onChange={(e) => handleInputChange("firstName", e.target.value)} placeholder="Digite o nome" required />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Sobrenome</Label>
-                  <Input id="lastName" leftIcon="userPlus" value={formData.lastName} onChange={(e) => handleInputChange("lastName", e.target.value)} placeholder="Digite o sobrenome" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Sobrenome</Label>
+                <Input id="lastName" leftIcon="userPlus" value={formData.lastName} onChange={(e) => handleInputChange("lastName", e.target.value)} placeholder="Digite o sobrenome" />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-mail *</Label>
-                  <Input id="email" type="email" leftIcon="mail" value={formData.email} onChange={(e) => handleInputChange("email", e.target.value)} placeholder="Digite o email" required />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">E-mail *</Label>
+                <Input id="email" type="email" leftIcon="mail" value={formData.email} onChange={(e) => handleInputChange("email", e.target.value)} placeholder="Digite o email" required />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="cpf">CPF</Label>
-                  <Input id="cpf" leftIcon="creditCard" value={formatCpf(formData.cpf)} onChange={(e) => handleInputChange("cpf", e.target.value)} placeholder="123.456.789-00" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="cpf">CPF</Label>
+                <Input id="cpf" leftIcon="creditCard" value={formatCpf(formData.cpf)} onChange={(e) => handleInputChange("cpf", e.target.value)} placeholder="123.456.789-00" />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telefone</Label>
-                  <Input id="phone" leftIcon="phone" value={formatPhone(formData.phone)} onChange={(e) => handleInputChange("phone", e.target.value)} placeholder="(11) 99999-9999" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefone</Label>
+                <Input id="phone" leftIcon="phone" value={formatPhone(formData.phone)} onChange={(e) => handleInputChange("phone", e.target.value)} placeholder="(11) 99999-9999" />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="birthdate">Data de Nascimento</Label>
-                  <DatePicker value={formData.birthdate ? new Date(formData.birthdate) : undefined} onChange={(date) => handleInputChange("birthdate", date ? date.toISOString() : "")} placeholder="Selecione a data de nascimento" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="birthdate">Data de Nascimento</Label>
+                <DatePicker value={formData.birthdate ? new Date(formData.birthdate) : undefined} onChange={(date) => handleInputChange("birthdate", date ? date.toISOString() : "")} placeholder="Selecione a data de nascimento" />
+              </div>
 
-                <div className="flex gap-3 pt-4">
-                  <Button type="submit" className="flex-1" disabled={createUserMutation.isPending || updateUserMutation.isPending}>
-                    <Icon name="check" size={16} className="mr-2 text-white" />
-                    <span className="text-white font-bold">{editingUser ? "Atualizar" : "Cadastrar"}</span>
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => setIsSheetOpen(false)} className="flex-1 text-slate-700">
-                    <span className="font-bold">Cancelar</span>
-                  </Button>
-                </div>
-              </form>
-            </SheetContent>
-          </Sheet>
-        </div>
+              <div className="flex gap-3 pt-4">
+                <Button type="submit" className="flex-1" disabled={createUserMutation.isPending || updateUserMutation.isPending}>
+                  <Icon name="check" size={16} className="mr-2 text-white" />
+                  <span className="text-white font-bold">{editingUser ? "Atualizar" : "Cadastrar"}</span>
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setIsSheetOpen(false)} className="flex-1 text-slate-700">
+                  <span className="font-bold">Cancelar</span>
+                </Button>
+              </div>
+            </form>
+          </SheetContent>
+        </Sheet>
       </div>
+      {/* </div> */}
 
       <div className="flex flex-1 flex-col gap-6 p-6">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-800">Lista de Usuários</h2>
-          <p className="text-slate-600">Gerencie todos os usuários administradores do sistema</p>
+        <div className="flex flex-row items-center justify-between">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-800">Lista de Usuários</h2>
+            <p className="text-slate-600">Gerencie todos os usuários do sistema</p>
+          </div>
+
+          <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={handleNewUser}>
+            <Icon name="plus" size={20} className="mr-2 text-white" />
+            <span className="text-white font-bold text-md">Novo Usuário</span>
+          </Button>
         </div>
 
         <Tabs defaultValue="admin" value={activeTab} onValueChange={(value) => setActiveTab(value as "admin" | "client")} className="space-y-4">

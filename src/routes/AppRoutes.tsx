@@ -15,6 +15,8 @@ import Dashboard from "@/components/Dashboard";
 import PrivateRoute from "./PrivateRoute";
 import TaxConsultPage from "@/pages/TaxConsultPage";
 import PreApprovals from "@/pages/PreApprovals";
+import Settings from "@/pages/Settings";
+import Profile from "@/pages/Profile";
 
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
@@ -44,6 +46,8 @@ const AppRoutes = () => {
           <Route path="enterprises" element={<Enterprises />} />
           <Route path="tenants" element={<Tenants />} />
           <Route path="pre-approvals" element={<PreApprovals />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="profile" element={<Profile />} />
           {/* Forms handled via drawers inside Tenants and Enterprises pages */}
           <Route path="tax" element={<TaxConsultPage />} />
           <Route path="reports" element={<Reports />} />

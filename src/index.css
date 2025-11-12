@@ -91,6 +91,7 @@
   --space-32: 8rem;
 
   /* Bordas e Raios Elegantes */
+  --radius: 0.5rem; /* 8px - padrão da aplicação */
   --radius-none: 0;
   --radius-sm: 0.125rem;
   --radius-md: 0.375rem;

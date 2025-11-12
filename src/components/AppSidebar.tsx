@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger } from "@/components/ui/sidebar";
 import { Icon } from "@/components/ui/icon";
 import nexxusLogo from "@/assets/icons/n-logo.png";
 
@@ -49,6 +49,13 @@ export const AppSidebar = ({ activeItem }: AppSidebarProps) => {
       key: "tax",
       showOnlyForSuperAdmin: false,
     },
+    {
+      title: "Configurações",
+      icon: <Icon name="settings" size={18} />,
+      path: "/settings",
+      key: "settings",
+      showOnlyForSuperAdmin: true,
+    },
     // {
     //   title: "Relatórios",
     //   icon: <Icon name="reports" size={18} />,
@@ -78,15 +85,17 @@ export const AppSidebar = ({ activeItem }: AppSidebarProps) => {
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="border-r border-slate-300/60 bg-slate-900 shadow-lg">
       <SidebarHeader className="border-b border-slate-700/50 bg-slate-800/50">
-        <div className="flex items-center gap-4 px-0 py-0">
-          <div className="flex items-center justify-center p-0">
-            {/* <Icon name="shield" size={32} className="text-blue-400" /> */}
-            <img src={nexxusLogo} alt="Nexxus Logo" className="h-16 w-16 object-contain" />
+        <div className="flex items-center justify-between gap-4 px-0 py-0">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center p-0">
+              <img src={nexxusLogo} alt="Nexxus Logo" className="h-16 w-16 object-contain" />
+            </div>
+            <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+              <span className="text-xl font-bold text-white tracking-tight">Nexxus</span>
+              <span className="text-sm text-slate-300 font-medium">Gestor Tributário</span>
+            </div>
           </div>
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="text-xl font-bold text-white tracking-tight">Nexxus</span>
-            <span className="text-sm text-slate-300 font-medium">Gestor Tributário</span>
-          </div>
+          <SidebarTrigger className="group-data-[collapsible=icon]:mx-auto p-2 rounded-lg hover:bg-slate-800 transition-all duration-200 text-slate-400 hover:text-white" />
         </div>
       </SidebarHeader>
 

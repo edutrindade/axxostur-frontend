@@ -72,7 +72,7 @@ const Clients = () => {
 
   return (
     <>
-      <AppHeader title="Clientes" showActionButton={false} />
+      <AppHeader title="Clientes" showActionButton={false} subtitle="Gerencie os clientes cadastrados na plataforma" />
 
       <div className="flex flex-1 flex-col gap-6 p-6">
         <div className="space-y-2">

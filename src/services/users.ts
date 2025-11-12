@@ -168,3 +168,25 @@ export const updateUserPassword = async (data: UpdatePasswordData): Promise<void
 export const deleteUser = async (id: string): Promise<void> => {
   await api.delete(`/users/${id}`);
 };
+
+// Current authenticated user endpoints
+export const getMyProfile = async (): Promise<User> => {
+  const response = await api.get<{ user: ApiUserItem }>("/users/me");
+  return mapApiUserToUser(response.data.user);
+};
+
+export const updateMyProfile = async (userData: UpdateUserData): Promise<User> => {
+  const payload: UpdateUserPayload = {};
+
+  if (userData.firstName !== undefined) payload.firstName = userData.firstName;
+  if (userData.lastName !== undefined) payload.lastName = userData.lastName;
+  if (userData.email !== undefined) payload.email = userData.email;
+  if (userData.phone !== undefined) payload.phone = userData.phone;
+  if (userData.cpf !== undefined) payload.cpf = userData.cpf;
+  if (userData.birthdate !== undefined) {
+    payload.birthDate = typeof userData.birthdate === "string" ? userData.birthdate : (userData.birthdate as Date).toISOString();
+  }
+
+  const response = await api.patch<ApiUserItem>("/users/me", payload);
+  return mapApiUserToUser(response.data);
+};
