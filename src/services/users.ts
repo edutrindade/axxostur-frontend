@@ -137,7 +137,7 @@ export const getUserById = async (id: string): Promise<User> => {
 };
 
 export const createUser = async (userData: CreateUserData): Promise<User> => {
-  const response = await api.post<ApiUserItem>("/users", userData);
+  const response = await api.post<ApiUserItem>("/auth/admin/signup", userData);
   return mapApiUserToUser(response.data);
 };
 
