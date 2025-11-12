@@ -2,18 +2,17 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Login from "@/pages/Login";
 import ForgotPassword from "@/pages/ForgotPassword";
+import PreRegistration from "@/pages/PreRegistration";
 import Home from "@/pages/Home";
 import Users from "@/pages/Users";
 import Clients from "@/pages/Clients";
 import ClientCreate from "@/pages/ClientCreate";
 import Enterprises from "@/pages/Enterprises";
 import Tenants from "@/pages/Tenants";
-// Drawer-based forms: standalone TenantForm page removed
 import Reports from "@/pages/Reports";
 import Dashboard from "@/components/Dashboard";
 import PrivateRoute from "./PrivateRoute";
 import TaxConsultPage from "@/pages/TaxConsultPage";
-// Drawer-based forms: standalone EnterpriseForm page removed
 
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
@@ -24,6 +23,7 @@ const AppRoutes = () => {
         {/* Rotas públicas */}
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/" replace /> : <ForgotPassword />} />
+        <Route path="/pre-registration" element={isAuthenticated ? <Navigate to="/" replace /> : <PreRegistration />} />
 
         {/* Rotas privadas */}
         <Route
