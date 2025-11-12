@@ -20,12 +20,13 @@ import { formatCpf, formatPhone } from "@/utils/format";
 import { getUsers, createUser, updateUser, deleteUser, type User, type CreateUserData, type UpdateUserData } from "@/services/users";
 
 interface UserFormData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: string;
   birthdate: string;
   phone: string;
-  cpfCnpj: string;
+  cpf: string;
 }
 
 const Users = () => {
@@ -36,12 +37,13 @@ const Users = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [formData, setFormData] = useState<UserFormData>({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     role: "super_admin",
     birthdate: "",
     phone: "",
-    cpfCnpj: "",
+    cpf: "",
   });
 
   const {
@@ -117,12 +119,13 @@ const Users = () => {
 
   const resetForm = () => {
     setFormData({
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       role: "super_admin",
       birthdate: "",
       phone: "",
-      cpfCnpj: "",
+      cpf: "",
     });
   };
 
@@ -135,12 +138,13 @@ const Users = () => {
   const handleEditUser = (user: User) => {
     setEditingUser(user);
     setFormData({
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       role: user.role || "ADMIN",
       birthdate: user.birthdate ? new Date(user.birthdate).toISOString().split("T")[0] : "",
       phone: user.phone || "",
-      cpfCnpj: user.cpfCnpj || "",
+      cpf: user.cpf || "",
     });
     setIsSheetOpen(true);
   };
@@ -163,7 +167,7 @@ const Users = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.email) {
+    if (!formData.firstName || !formData.email) {
       toast.error("Erro", {
         description: "Nome e e-mail são obrigatórios.",
       });
@@ -196,14 +200,14 @@ const Users = () => {
     }
 
     const userData: CreateUserData | UpdateUserData = {
-      name: formData.name,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
       email: formData.email,
-      role: formData.role,
       ...(formData.birthdate && {
         birthdate: new Date(formData.birthdate),
       }),
       ...(formData.phone && { phone: formData.phone }),
-      ...(formData.cpfCnpj && { cpfCnpj: formData.cpfCnpj }),
+      ...(formData.cpf && { cpf: formData.cpf }),
     };
 
     if (editingUser) {
@@ -239,12 +243,13 @@ const Users = () => {
   }
 
   const UserCard = ({ user, onEdit, onDelete }: UserCardProps) => {
+    const fullName = `${user.firstName} ${user.lastName}`.trim();
     return (
       <Card className="p-4">
         <div className="flex items-start justify-between">
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold">{user.name}</h3>
+              <h3 className="font-semibold">{fullName}</h3>
               <Badge variant={user.active ? "default" : "secondary"}>{user.active ? "Ativo" : "Inativo"}</Badge>
             </div>
             <p className="text-sm text-muted-foreground">{user.email}</p>
@@ -283,8 +288,13 @@ const Users = () => {
               </SheetHeader>
               <form onSubmit={handleSubmit} className="space-y-4 mt-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nome *</Label>
-                  <Input id="name" leftIcon="userPlus" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} placeholder="Digite o nome completo" required />
+                  <Label htmlFor="firstName">Nome *</Label>
+                  <Input id="firstName" leftIcon="userPlus" value={formData.firstName} onChange={(e) => handleInputChange("firstName", e.target.value)} placeholder="Digite o nome" required />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Sobrenome</Label>
+                  <Input id="lastName" leftIcon="userPlus" value={formData.lastName} onChange={(e) => handleInputChange("lastName", e.target.value)} placeholder="Digite o sobrenome" />
                 </div>
 
                 <div className="space-y-2">
@@ -293,8 +303,8 @@ const Users = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="cpfCnpj">CPF/CNPJ</Label>
-                  <Input id="cpfCnpj" leftIcon="creditCard" value={formatCpf(formData.cpfCnpj)} onChange={(e) => handleInputChange("cpfCnpj", e.target.value)} placeholder="123.456.789-00" />
+                  <Label htmlFor="cpf">CPF</Label>
+                  <Input id="cpf" leftIcon="creditCard" value={formatCpf(formData.cpf)} onChange={(e) => handleInputChange("cpf", e.target.value)} placeholder="123.456.789-00" />
                 </div>
 
                 <div className="space-y-2">
@@ -383,7 +393,7 @@ const Users = () => {
       </div>
       <Dialog
         title="Confirmar Exclusão"
-        description={`Tem certeza que deseja excluir o usuário ${userToDelete?.name}? Esta ação não pode ser desfeita.`}
+        description={`Tem certeza que deseja excluir o usuário ${userToDelete ? `${userToDelete.firstName} ${userToDelete.lastName}`.trim() : ""}? Esta ação não pode ser desfeita.`}
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={confirmDeleteUser}

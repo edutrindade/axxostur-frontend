@@ -65,23 +65,10 @@ export const AppSidebar = ({ activeItem }: AppSidebarProps) => {
       key: "dashboard",
     },
     {
-      title: "Minhas Empresas",
-      icon: <Icon name="building" size={18} />,
-      path: "/my-companies",
-      key: "my-companies",
-    },
-    // Novo item também disponível para clientes
-    {
       title: "Cadastros Fiscais",
       icon: <Icon name="receipt" size={18} />,
       path: "/tax",
       key: "tax",
-    },
-    {
-      title: "Comissões",
-      icon: <Icon name="dollar" size={18} />,
-      path: "/commissions",
-      key: "commissions",
     },
   ];
 
