@@ -70,7 +70,7 @@ const Login = () => {
           <div className="max-w-md text-center space-y-8 animate-fade-in">
             <div className="space-y-6">
               <div className="w-20 h-20 mx-auto bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
-                <Icon name="shield" size={32} className="text-white" />
+                <img src="/src/assets/icons/n-logo.png" alt="Nexxus Logo" className="w-14 h-14" />
               </div>
               <h1 className="text-4xl font-bold text-white leading-tight">
                 Consultas Tributárias
@@ -109,7 +109,7 @@ const Login = () => {
         </div>
 
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-          <div className="w-full max-w-md animate-slide-in-right">
+          <div className="w-full max-w-lg animate-slide-in-right">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 animate-fade-in">
               <div className="text-center space-y-6 mb-8 animate-scale-in">
                 <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg hover-lift interactive-element">

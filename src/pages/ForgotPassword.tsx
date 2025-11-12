@@ -1,108 +1,157 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Icon } from "@/components/ui/icon";
+import { toast } from "sonner";
+import { forgotPassword } from "@/services/auth";
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isEmailSent, setIsEmailSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    setIsEmailSent(true);
-    setIsLoading(false);
+    try {
+      await forgotPassword({ email });
+      toast.success("E-mail enviado com sucesso!", {
+        description: "Verifique sua caixa de entrada para continuar.",
+      });
+      navigate("/reset-password", { state: { email } });
+    } catch (error: any) {
+      toast.error("Erro ao enviar e-mail", {
+        description: error?.response?.data?.message || "Não foi possível enviar o e-mail. Tente novamente.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (isEmailSent) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <Card className="border-border/50 shadow-2xl">
-            <CardHeader className="text-center space-y-2">
-              <div className="mx-auto w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+  return (
+    <div className="min-h-screen relative overflow-hidden animate-fade-in">
+      <div
+        className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800"
+        style={{
+          background: `
+						linear-gradient(135deg, 
+							rgb(15, 23, 42) 0%, 
+							rgb(30, 58, 95) 35%, 
+							rgb(51, 65, 85) 100%
+						)
+					`,
+        }}
+      />
+
+      <div className="absolute inset-0 opacity-50 animate-pulse-subtle">
+        <svg className="w-full h-full" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="dots" width="60" height="60" patternUnits="userSpaceOnUse">
+              <circle cx="30" cy="30" r="1" fill="white" fillOpacity="0.03" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dots)" />
+        </svg>
+      </div>
+
+      <div className="relative z-10 min-h-screen flex">
+        <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12">
+          <div className="max-w-lg text-center space-y-8 animate-fade-in">
+            <div className="space-y-6">
+              <div className="w-20 h-20 mx-auto bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
+                <Icon name="lock" size={32} className="text-white" />
               </div>
-              <CardTitle className="text-2xl font-bold">E-mail Enviado!</CardTitle>
-              <CardDescription className="text-base">Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.</CardDescription>
-            </CardHeader>
+              <h1 className="text-4xl font-bold text-white leading-tight">
+                Recuperação de
+                <span className="block gradient-text">Senha</span>
+              </h1>
+              <p className="text-xl text-slate-300 leading-relaxed">Não se preocupe! Vamos ajudá-lo a recuperar o acesso à sua conta de forma rápida e segura.</p>
+            </div>
 
-            <CardContent>
-              <div className="text-center space-y-4">
-                <p className="text-sm text-muted-foreground">Não recebeu o email? Verifique sua pasta de spam ou tente novamente.</p>
+            <div className="grid grid-cols-1 gap-6 pt-8">
+              <div className="text-center space-y-3">
+                <div className="w-12 h-12 mx-auto bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
+                  <Icon name="mail" size={20} className="text-white" />
+                </div>
+                <p className="text-sm text-slate-300">Receba um código de verificação por e-mail</p>
+              </div>
+              <div className="text-center space-y-3">
+                <div className="w-12 h-12 mx-auto bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
+                  <Icon name="shield" size={20} className="text-white" />
+                </div>
+                <p className="text-sm text-slate-300">Processo seguro e protegido</p>
+              </div>
+              <div className="text-center space-y-3">
+                <div className="w-12 h-12 mx-auto bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
+                  <Icon name="check" size={20} className="text-white" />
+                </div>
+                <p className="text-sm text-slate-300">Redefina sua senha em minutos</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                <Separator />
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+          <div className="w-full max-w-lg animate-slide-in-right">
+            <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 animate-fade-in">
+              <div className="text-center space-y-6 mb-8 animate-scale-in">
+                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg hover-lift interactive-element">
+                  <Icon name="lock" size={24} className="text-white" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-bold text-slate-800">Esqueceu sua senha?</h2>
+                  <p className="text-slate-600">Digite seu e-mail para receber o código de recuperação</p>
+                </div>
+              </div>
 
-                <Link to="/login">
-                  <Button variant="outline" className="w-full rounded-xl">
-                    Voltar ao Login
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2 animate-slide-in-left" style={{ animationDelay: "0.1s" }}>
+                  <label htmlFor="email" className="text-sm font-medium text-slate-700">
+                    E-mail
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Digite seu e-mail"
+                      required
+                      disabled={isLoading}
+                      className="h-12 pl-12 bg-slate-50/50 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl transition-all duration-200 focus-ring"
+                    />
+                    <Icon name="mail" size={18} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                  </div>
+                </div>
+
+                <div className="animate-slide-in-left" style={{ animationDelay: "0.2s" }}>
+                  <Button type="submit" className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 interactive-element" disabled={isLoading}>
+                    {isLoading ? (
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Enviando...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center space-x-2">
+                        <span>Enviar código</span>
+                        <Icon name="arrowRight" size={16} />
+                      </div>
+                    )}
                   </Button>
+                </div>
+              </form>
+
+              <div className="mt-8 text-center space-y-4">
+                <Link to="/login" className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200">
+                  <Icon name="arrowLeft" size={16} className="mr-1" />
+                  Voltar ao login
                 </Link>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Card className="border-border/50 shadow-2xl">
-          <CardHeader className="text-center space-y-2">
-            <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-3a1 1 0 011-1h2.586l6.414-6.414a6 6 0 015.743-7.743z" />
-              </svg>
-            </div>
-            <CardTitle className="text-2xl font-bold">Esqueceu sua senha?</CardTitle>
-            <CardDescription className="text-base">Digite seu e-mail e enviaremos instruções para redefinir sua senha.</CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-foreground">
-                  E-mail
-                </label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Digite seu e-mail" required disabled={isLoading} className="h-10 mt-1" />
-              </div>
-
-              <Button type="submit" className="w-full h-10 mt-6 rounded-xl" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Enviando...
-                  </>
-                ) : (
-                  "Enviar instruções"
-                )}
-              </Button>
-            </form>
-
-            <Separator className="my-6" />
-
-            <div className="text-center">
-              <Link to="/login">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground rounded-xl">
-                  ← Voltar ao login
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Login from "@/pages/Login";
 import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import PreRegistration from "@/pages/PreRegistration";
 import PreRegistrationSuccess from "@/pages/PreRegistrationSuccess";
 import Home from "@/pages/Home";
@@ -24,6 +25,7 @@ const AppRoutes = () => {
         {/* Rotas públicas */}
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/" replace /> : <ForgotPassword />} />
+        <Route path="/reset-password" element={isAuthenticated ? <Navigate to="/" replace /> : <ResetPassword />} />
         <Route path="/pre-registration" element={isAuthenticated ? <Navigate to="/" replace /> : <PreRegistration />} />
         <Route path="/pre-registration/success" element={isAuthenticated ? <Navigate to="/" replace /> : <PreRegistrationSuccess />} />
 

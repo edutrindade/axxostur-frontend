@@ -120,3 +120,29 @@ export interface UpdatePasswordRequest {
 export const updateMyPassword = async (data: UpdatePasswordRequest): Promise<void> => {
   await api.patch("/users/me/password", data);
 };
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export const forgotPassword = async (data: ForgotPasswordRequest): Promise<void> => {
+  await api.post("/auth/forgot-password", data);
+};
+
+export interface ConfirmRecoveryCodeRequest {
+  email: string;
+  code: string;
+}
+
+export const confirmRecoveryCode = async (data: ConfirmRecoveryCodeRequest): Promise<void> => {
+  await api.post("/auth/confirm-recovery-code", data);
+};
+
+export interface ResetPasswordRequest {
+  email: string;
+  newPassword: string;
+}
+
+export const resetPassword = async (data: ResetPasswordRequest): Promise<void> => {
+  await api.post("/auth/reset-password", data);
+};
