@@ -44,28 +44,7 @@ export function DatePicker({ value, onChange, placeholder = "Selecione uma data"
       dropdownMode="select"
       yearDropdownItemNumber={100}
       scrollableYearDropdown
-      // igualar largura do popover ao trigger
-      popperProps={{ strategy: "absolute" }}
       popperContainer={({ children }) => <div className="relative z-50">{children}</div>}
-      popperModifiers={[
-        { name: "offset", options: { offset: [0, 6] } },
-        {
-          name: "sameWidth",
-          enabled: true,
-          phase: "write",
-          requires: ["computeStyles"],
-          fn: ({ state }: any) => {
-            const w = `${state.rects.reference.width}px`;
-            state.styles.popper.width = w;
-            state.styles.popper.minWidth = w;
-          },
-          effect: ({ state }: any) => {
-            const refWidth = `${(state.elements.reference as HTMLElement).offsetWidth}px`;
-            (state.elements.popper as HTMLElement).style.width = refWidth;
-            (state.elements.popper as HTMLElement).style.minWidth = refWidth;
-          },
-        },
-      ]}
       ariaLabelledBy="datepicker-label"
     />
   );

@@ -14,12 +14,10 @@ import { createColumns } from "@/components/enterprises/columns";
 import { EnterpriseCard } from "@/components/enterprises/EnterpriseCard";
 import { EnterpriseForm } from "@/components/enterprises/EnterpriseForm";
 import { EnterpriseDetailsModal } from "@/components/enterprises/EnterpriseDetailsModal";
-import { useNavigate } from "react-router-dom";
 
 const Enterprises = () => {
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);

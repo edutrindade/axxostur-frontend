@@ -77,13 +77,14 @@ export const AppSidebar = ({ activeItem }: AppSidebarProps) => {
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="border-r border-slate-300/60 bg-slate-900 shadow-lg">
       <SidebarHeader className="border-b border-slate-700/50 bg-slate-800/50">
-        <div className="flex items-center gap-4 px-6 py-6">
-          <div className="flex items-center justify-center">
-            <Icon name="shield" size={32} className="text-blue-400" />
+        <div className="flex items-center gap-4 px-0 py-0">
+          <div className="flex items-center justify-center p-0">
+            {/* <Icon name="shield" size={32} className="text-blue-400" /> */}
+            <img src="/src/assets/icons/n-logo.png" alt="Nexxus Logo" className="h-16 w-16 object-contain" />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="text-xl font-bold text-white tracking-tight">Nexxus</span>
-            <span className="text-sm text-slate-300 font-medium">Consultas Tributárias</span>
+            <span className="text-sm text-slate-300 font-medium">Gestor Tributário</span>
           </div>
         </div>
       </SidebarHeader>

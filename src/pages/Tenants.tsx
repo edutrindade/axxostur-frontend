@@ -7,7 +7,6 @@ import { DataTable } from "@/components/users/data-table";
 import { createColumns } from "@/components/tenants/columns";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TenantForm } from "@/components/tenants/TenantForm";
-import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,16 +15,14 @@ import { listTenants, type Tenant } from "@/services/tenants";
 const Tenants = () => {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(20);
 
-  const { data, isLoading } = useQuery({
+  const { data = { items: [], total: 0, page: 1, limit: 20 }, isLoading } = useQuery({
     queryKey: ["tenants", currentPage, limit],
     queryFn: () => listTenants({ page: currentPage, limit }),
-    keepPreviousData: true,
   });
 
   const tenants: Tenant[] = data?.items ?? [];
@@ -41,8 +38,6 @@ const Tenants = () => {
     },
   });
 
-  
-
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
@@ -54,20 +49,12 @@ const Tenants = () => {
         <div className="space-y-2 flex-1">
           <div className="flex items-center gap-2">
             <h3 className="font-semibold">{tenant.fantasyName || tenant.name}</h3>
-            <Badge variant={tenant.active ? "default" : "secondary"}>
-              {tenant.active ? "Ativa" : "Inativa"}
-            </Badge>
+            <Badge variant={tenant.active ? "default" : "secondary"}>{tenant.active ? "Ativa" : "Inativa"}</Badge>
           </div>
           <p className="text-sm text-muted-foreground">CNPJ: {tenant.cnpj}</p>
-          {tenant.contactName && (
-            <p className="text-sm text-muted-foreground">Contato: {tenant.contactName}</p>
-          )}
-          {tenant.contactPhone && (
-            <p className="text-sm text-muted-foreground">Telefone: {tenant.contactPhone}</p>
-          )}
-          <p className="text-xs text-muted-foreground">
-            Criada em: {new Date(tenant.createdAt).toLocaleDateString("pt-BR")}
-          </p>
+          {tenant.contactName && <p className="text-sm text-muted-foreground">Contato: {tenant.contactName}</p>}
+          {tenant.contactPhone && <p className="text-sm text-muted-foreground">Telefone: {tenant.contactPhone}</p>}
+          <p className="text-xs text-muted-foreground">Criada em: {new Date(tenant.createdAt).toLocaleDateString("pt-BR")}</p>
         </div>
       </div>
     </Card>
@@ -87,20 +74,14 @@ const Tenants = () => {
                 setSelectedTenant(null);
                 setIsSheetOpen(true);
               }}
-           >
+            >
               <Icon name="plus" size={20} className="mr-2 text-white" />
               <span className="text-white font-bold text-md">Nova Empresa</span>
             </Button>
             <SheetContent className="min-w-[400px] sm:min-w-[540px] p-4">
               <SheetHeader>
-                <SheetTitle className="text-xl">
-                  {selectedTenant ? "Editar Empresa" : "Cadastrar Nova Empresa"}
-                </SheetTitle>
-                <SheetDescription>
-                  {selectedTenant
-                    ? "Atualize os dados da empresa."
-                    : "Preencha os dados para cadastrar uma nova empresa."}
-                </SheetDescription>
+                <SheetTitle className="text-xl">{selectedTenant ? "Editar Empresa" : "Cadastrar Nova Empresa"}</SheetTitle>
+                <SheetDescription>{selectedTenant ? "Atualize os dados da empresa." : "Preencha os dados para cadastrar uma nova empresa."}</SheetDescription>
               </SheetHeader>
               <TenantForm
                 initialData={selectedTenant ?? undefined}
