@@ -1,9 +1,12 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { FirstLoginModal } from "@/components/FirstLoginModal";
+import { useAuth } from "@/hooks/useAuth";
 
 const Dashboard = () => {
   const location = useLocation();
+  const { user, updateUserFirstLogin } = useAuth();
 
   // Mapear rotas para activeItem da sidebar
   const getActiveItem = () => {
@@ -21,15 +24,21 @@ const Dashboard = () => {
     return "dashboard";
   };
 
+  const showFirstLoginModal = user?.firstLogin === true;
+  const userName = user?.firstName || "Usuário";
+
   return (
-    <SidebarProvider defaultOpen={true}>
-      <AppSidebar activeItem={getActiveItem()} />
-      <SidebarInset className="flex-1 min-w-0">
-        <main className="flex-1 p-6 md:p-8 overflow-auto w-full min-w-0">
-          <Outlet />
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+    <>
+      <FirstLoginModal isOpen={showFirstLoginModal} userName={userName} onSuccess={updateUserFirstLogin} />
+      <SidebarProvider defaultOpen={true}>
+        <AppSidebar activeItem={getActiveItem()} />
+        <SidebarInset className="flex-1 min-w-0">
+          <main className="flex-1 p-6 md:p-8 overflow-auto w-full min-w-0">
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </>
   );
 };
 

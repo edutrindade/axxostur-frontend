@@ -66,6 +66,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateUserFirstLogin = () => {
+    if (user) {
+      const updatedUser = { ...user, firstLogin: false };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+
   const value: AuthContextType = {
     user,
     role,
@@ -77,6 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isSuperAdmin: checkIsAdmin(),
     login,
     logout,
+    updateUserFirstLogin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -83,6 +83,16 @@ export const login = async (credentials: LoginRequest): Promise<AuthResponse> =>
 };
 
 export const logout = async () => {
+  const { user } = getAuthData();
+
+  if (user?.email) {
+    try {
+      await api.post("/auth/signout", { email: user.email });
+    } catch (error) {
+      console.error("Erro ao fazer signout:", error);
+    }
+  }
+
   clearAuthData();
 };
 
@@ -99,4 +109,14 @@ export const isAdmin = (): boolean => {
 export const isClient = (): boolean => {
   const { role } = getAuthData();
   return role === "CLIENT";
+};
+
+export interface UpdatePasswordRequest {
+  currentPassword?: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export const updateMyPassword = async (data: UpdatePasswordRequest): Promise<void> => {
+  await api.patch("/users/me/password", data);
 };

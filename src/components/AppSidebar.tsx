@@ -100,7 +100,7 @@ export const AppSidebar = ({ activeItem }: AppSidebarProps) => {
                     tooltip={item.title}
                     className={`
 											cursor-pointer text-sm font-medium py-3 px-4 rounded-xl transition-all duration-200 group
-											${activeItem === item.key ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transform scale-[1.02]" : "text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-sm hover:transform hover:scale-[1.01]"}
+											${activeItem === item.key ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg " : "text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-sm"}
 										`}
                     onClick={() => navigate(item.path)}
                   >

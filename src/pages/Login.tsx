@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/icon";
 import { toast } from "sonner";
 
 const Login = () => {
+  const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -163,11 +164,7 @@ const Login = () => {
                 </div>
 
                 <div className="animate-slide-in-left" style={{ animationDelay: "0.3s" }}>
-                  <Button
-                    type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 interactive-element"
-                    disabled={isLoading}
-                  >
+                  <Button type="submit" className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300  interactive-element" disabled={isLoading}>
                     {isLoading ? (
                       <div className="flex items-center justify-center space-x-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -192,7 +189,7 @@ const Login = () => {
                   <p className="text-sm text-slate-600 mb-3">Ainda não tem uma conta?</p>
                   <Link
                     to="/pre-registration"
-                    className="inline-flex items-center justify-center w-full h-12 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                    className="inline-flex items-center justify-center w-full h-12 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                   >
                     <div className="flex items-center space-x-2">
                       <Icon name="userPlus" size={16} />
@@ -202,7 +199,7 @@ const Login = () => {
                 </div>
 
                 <div className="pt-4">
-                  <p className="text-xs text-slate-500">©2025 Nexxus. Todos os direitos reservados.</p>
+                  <p className="text-xs text-slate-500">©{currentYear} Nexxus. Todos os direitos reservados.</p>
                 </div>
               </div>
             </div>

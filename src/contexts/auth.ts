@@ -28,6 +28,7 @@ export interface AuthContextType {
   isSuperAdmin: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  updateUserFirstLogin: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

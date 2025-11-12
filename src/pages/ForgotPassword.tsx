@@ -42,7 +42,7 @@ const ForgotPassword = () => {
                 <Separator />
 
                 <Link to="/login">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full rounded-xl">
                     Voltar ao Login
                   </Button>
                 </Link>
@@ -77,7 +77,7 @@ const ForgotPassword = () => {
                 <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Digite seu e-mail" required disabled={isLoading} className="h-10 mt-1" />
               </div>
 
-              <Button type="submit" className="w-full h-10 mt-6" disabled={isLoading}>
+              <Button type="submit" className="w-full h-10 mt-6 rounded-xl" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -96,7 +96,7 @@ const ForgotPassword = () => {
 
             <div className="text-center">
               <Link to="/login">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground rounded-xl">
                   ← Voltar ao login
                 </Button>
               </Link>
