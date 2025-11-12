@@ -273,7 +273,7 @@ const PreRegistration = () => {
 
                 {step === 2 && (
                   <div className="space-y-4 animate-fade-in">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700">CEP *</label>
                         <div className="relative">
@@ -286,19 +286,19 @@ const PreRegistration = () => {
                         </div>
                       </div>
 
-                      <div className="space-y-2 md:col-span-2">
+                      <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700">Rua *</label>
                         <Input value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} placeholder="Nome da rua" className="h-12" required />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700">Número *</label>
                         <Input value={address.number} onChange={(e) => setAddress({ ...address, number: e.target.value })} placeholder="123" className="h-12" required />
                       </div>
 
-                      <div className="space-y-2 md:col-span-2">
+                      <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700">Complemento</label>
                         <Input value={address.complement} onChange={(e) => setAddress({ ...address, complement: e.target.value })} placeholder="Sala, apartamento, etc." className="h-12" />
                       </div>
@@ -365,7 +365,7 @@ const PreRegistration = () => {
 
                 <div className="flex items-center justify-between pt-6 border-t border-slate-200">
                   {step > 1 && (
-                    <Button type="button" onClick={handleBack} variant="outline" className="h-12 px-6">
+                    <Button type="button" onClick={handleBack} variant="outline" className="h-12 rounded-xl px-6">
                       <div className="flex items-center space-x-2">
                         <Icon name="arrowLeft" size={16} />
                         <span>Voltar</span>
@@ -374,14 +374,14 @@ const PreRegistration = () => {
                   )}
 
                   {step < 3 ? (
-                    <Button type="button" onClick={handleNext} className={`h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 ${step === 1 ? "w-full" : "ml-auto"}`}>
+                    <Button type="button" onClick={handleNext} className={`h-12 px-6 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 ${step === 1 ? "w-full" : "ml-auto"}`}>
                       <div className="flex items-center space-x-2">
                         <span>Próximo</span>
                         <Icon name="arrowRight" size={16} />
                       </div>
                     </Button>
                   ) : (
-                    <Button type="submit" className="h-12 px-6 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 ml-auto" disabled={isLoading}>
+                    <Button type="submit" className="h-12 px-6 rounded-xl bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 ml-auto" disabled={isLoading}>
                       {isLoading ? (
                         <div className="flex items-center space-x-2">
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
