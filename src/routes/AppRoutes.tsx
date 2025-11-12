@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Login from "@/pages/Login";
 import ForgotPassword from "@/pages/ForgotPassword";
 import PreRegistration from "@/pages/PreRegistration";
+import PreRegistrationSuccess from "@/pages/PreRegistrationSuccess";
 import Home from "@/pages/Home";
 import Users from "@/pages/Users";
 import Clients from "@/pages/Clients";
@@ -24,6 +25,7 @@ const AppRoutes = () => {
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/" replace /> : <ForgotPassword />} />
         <Route path="/pre-registration" element={isAuthenticated ? <Navigate to="/" replace /> : <PreRegistration />} />
+        <Route path="/pre-registration/success" element={isAuthenticated ? <Navigate to="/" replace /> : <PreRegistrationSuccess />} />
 
         {/* Rotas privadas */}
         <Route

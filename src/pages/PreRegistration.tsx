@@ -24,6 +24,7 @@ const PreRegistration = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
+  const [cepFound, setCepFound] = useState(false);
 
   const [tenantName, setTenantName] = useState("");
   const [tenantCnpj, setTenantCnpj] = useState("");
@@ -63,6 +64,7 @@ const PreRegistration = () => {
             city: addressData.city,
             state: addressData.state,
           }));
+          setCepFound(true);
           toast.success("CEP encontrado com sucesso!");
         } else {
           toast.error("CEP não encontrado");
@@ -142,12 +144,15 @@ const PreRegistration = () => {
       await createPreRegistration(payload);
 
       toast.success("Cadastro realizado com sucesso!", {
-        description: "Em breve entraremos em contato.",
+        description: "Redirecionando...",
       });
 
       setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+        navigate("/pre-registration/success", {
+          state: { fromPreRegistration: true },
+          replace: true,
+        });
+      }, 1500);
     } catch (error: any) {
       console.error("Erro no cadastro:", error);
 
@@ -307,19 +312,19 @@ const PreRegistration = () => {
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700">Cidade *</label>
-                        <Input value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} placeholder="Nome da cidade" className="h-12" required />
+                        <Input value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} placeholder="Nome da cidade" className="h-12" required disabled={cepFound} />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700">Estado *</label>
-                        <Input value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} placeholder="UF" maxLength={2} className="h-12" required />
+                        <Input value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} placeholder="UF" maxLength={2} className="h-12" required disabled={cepFound} />
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700">País *</label>
-                        <Input value={address.country} onChange={(e) => setAddress({ ...address, country: e.target.value })} placeholder="Brasil" className="h-12" required />
+                        <Input value={address.country} onChange={(e) => setAddress({ ...address, country: e.target.value })} placeholder="Brasil" className="h-12" required disabled={cepFound} />
                       </div>
                     </div>
                   </div>
