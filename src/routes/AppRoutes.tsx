@@ -7,13 +7,13 @@ import PreRegistrationSuccess from "@/pages/PreRegistrationSuccess";
 import Home from "@/pages/Home";
 import Users from "@/pages/Users";
 import Clients from "@/pages/Clients";
-import ClientCreate from "@/pages/ClientCreate";
 import Enterprises from "@/pages/Enterprises";
 import Tenants from "@/pages/Tenants";
 import Reports from "@/pages/Reports";
 import Dashboard from "@/components/Dashboard";
 import PrivateRoute from "./PrivateRoute";
 import TaxConsultPage from "@/pages/TaxConsultPage";
+import PreApprovals from "@/pages/PreApprovals";
 
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
@@ -39,10 +39,9 @@ const AppRoutes = () => {
           <Route index element={<Home />} />
           <Route path="users" element={<Users />} />
           <Route path="clients" element={<Clients />} />
-          <Route path="clients/new" element={<ClientCreate />} />
-          <Route path="clients/edit" element={<ClientCreate />} />
           <Route path="enterprises" element={<Enterprises />} />
           <Route path="tenants" element={<Tenants />} />
+          <Route path="pre-approvals" element={<PreApprovals />} />
           {/* Forms handled via drawers inside Tenants and Enterprises pages */}
           <Route path="tax" element={<TaxConsultPage />} />
           <Route path="reports" element={<Reports />} />

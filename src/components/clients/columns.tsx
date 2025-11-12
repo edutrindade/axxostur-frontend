@@ -3,57 +3,71 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatCnpj, formatPhone } from "@/utils/format";
+import { formatCpfCnpj, formatPhone } from "@/utils/format";
 import { type Client } from "@/services/clients";
 
+const getStatusBadge = (active: boolean) => {
+  return (
+    <Badge variant={active ? "default" : "destructive"} className={`font-bold text-sm px-3 py-1 ${active ? "bg-green-100 text-green-800 border border-green-300" : "bg-red-100 text-red-800 border border-red-300"}`} style={{ width: "80px" }}>
+      {active ? "Ativa" : "Inativa"}
+    </Badge>
+  );
+};
+
 interface ColumnProps {
-  onEdit: (client: Client) => void;
   onView: (client: Client) => void;
+  onEdit: (client: Client) => void;
 }
 
-export const createColumns = ({ onEdit, onView }: ColumnProps): ColumnDef<Client>[] => [
+export const createColumns = ({ onView, onEdit }: ColumnProps): ColumnDef<Client>[] => [
   {
     accessorKey: "tenant.name",
-    header: "Nome",
-    cell: ({ row }) => {
-      const name = row.original.tenant.name;
-      return <span className="font-bold text-slate-900">{name}</span>;
+    header: "Razão Social",
+    cell: ({ row }: { row: { original: Client } }) => {
+      const client = row.original;
+      return <span className="font-bold text-slate-900">{client.tenant.name}</span>;
+    },
+  },
+  {
+    accessorKey: "tenant.fantasyName",
+    header: "Nome Fantasia",
+    cell: ({ row }: { row: { original: Client } }) => {
+      const client = row.original;
+      return <span className="text-slate-800 font-semibold">{client.tenant.fantasyName || "-"}</span>;
     },
   },
   {
     accessorKey: "tenant.cnpj",
     header: "CNPJ",
-    cell: ({ row }) => {
-      const cnpj = row.original.tenant.cnpj;
-      return <span className="text-slate-800 font-semibold">{formatCnpj(cnpj)}</span>;
+    cell: ({ row }: { row: { original: Client } }) => {
+      const client = row.original;
+      const cnpj = client.tenant.cnpj;
+      return <span className="text-slate-800 font-semibold">{cnpj ? formatCpfCnpj(cnpj) : "-"}</span>;
     },
   },
   {
     accessorKey: "email",
     header: "E-mail",
-    cell: ({ row }) => {
-      const email = row.getValue("email") as string;
-      return <span className="text-slate-800 font-semibold">{email}</span>;
+    cell: ({ row }: { row: { original: Client } }) => {
+      const client = row.original;
+      return <span className="text-slate-800 font-semibold">{client.email}</span>;
     },
   },
   {
     accessorKey: "phone",
     header: "Telefone",
-    cell: ({ row }) => {
-      const phone = row.getValue("phone") as string;
-      return <span className="text-slate-800 font-semibold">{formatPhone(phone)}</span>;
+    cell: ({ row }: { row: { original: Client } }) => {
+      const client = row.original;
+      const phone = client.phone;
+      return <span className="text-slate-800 font-semibold">{phone ? formatPhone(phone) : "-"}</span>;
     },
   },
   {
     accessorKey: "tenant.active",
     header: "Status",
-    cell: ({ row }) => {
-      const active = row.original.tenant.active;
-      return (
-        <Badge variant={active ? "success" : "secondary"} className={`font-bold text-sm px-3 py-1 ${active ? "bg-green-100 text-green-800 border border-green-300" : "bg-red-100 text-red-800 border border-red-300"}`}>
-          {active ? "Ativo" : "Inativo"}
-        </Badge>
-      );
+    cell: ({ row }: { row: { original: Client } }) => {
+      const client = row.original;
+      return getStatusBadge(client.tenant.active);
     },
   },
   {
@@ -61,6 +75,7 @@ export const createColumns = ({ onEdit, onView }: ColumnProps): ColumnDef<Client
     header: "Ações",
     cell: ({ row }) => {
       const client = row.original;
+
       return (
         <TooltipProvider>
           <div className="flex items-center gap-2">

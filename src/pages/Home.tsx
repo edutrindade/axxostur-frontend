@@ -2,14 +2,15 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { AppHeader } from "@/components/AppHeader";
+import type { IconName } from "@/components/ui/icon";
 
 const Home = () => {
   const stats = useMemo(
     () => [
-      { key: "clients", title: "Clientes", value: 128, icon: "users", color: "text-blue-700", bg: "from-blue-50 to-blue-100/50 border-blue-200", iconBg: "bg-blue-100" },
-      { key: "users", title: "Usuários", value: 342, icon: "users", color: "text-purple-700", bg: "from-purple-50 to-purple-100/50 border-purple-200", iconBg: "bg-purple-100" },
-      { key: "payments", title: "Pagamentos", value: 1587, icon: "dollar", color: "text-green-700", bg: "from-green-50 to-green-100/50 border-green-200", iconBg: "bg-green-100" },
-      { key: "queries", title: "Consultas", value: 4521, icon: "search", color: "text-orange-700", bg: "from-orange-50 to-orange-100/50 border-orange-200", iconBg: "bg-orange-100" },
+      { key: "clients", title: "Clientes", value: 128, icon: "users" as IconName, color: "text-blue-700", bg: "from-blue-50 to-blue-100/50 border-blue-200", iconBg: "bg-blue-100" },
+      { key: "users", title: "Usuários", value: 342, icon: "users" as IconName, color: "text-purple-700", bg: "from-purple-50 to-purple-100/50 border-purple-200", iconBg: "bg-purple-100" },
+      { key: "pending", title: "Cadastros Pendentes", value: 15, icon: "clock" as IconName, color: "text-amber-700", bg: "from-amber-50 to-amber-100/50 border-amber-200", iconBg: "bg-amber-100" },
+      { key: "queries", title: "Consultas", value: 4521, icon: "search" as IconName, color: "text-orange-700", bg: "from-orange-50 to-orange-100/50 border-orange-200", iconBg: "bg-orange-100" },
     ],
     []
   );
@@ -27,10 +28,7 @@ const Home = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {stats.map((stat) => (
-            <Card
-              key={stat.key}
-              className={`bg-gradient-to-br ${stat.bg} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-2 cursor-pointer group`}
-            >
+            <Card key={stat.key} className={`bg-gradient-to-br ${stat.bg} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-2 cursor-pointer group`}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <CardTitle className="text-sm font-semibold text-slate-700">{stat.title}</CardTitle>
                 <div className={`p-3 rounded-xl ${stat.iconBg} ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
@@ -58,12 +56,12 @@ const Home = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors duration-200">
                   <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
-                  <span className="text-sm text-slate-700 font-semibold flex-1">Novo usuário registrado</span>
+                  <span className="text-sm text-slate-700 font-semibold flex-1">Novo cliente aprovado</span>
                   <span className="text-xs text-slate-500 font-medium">2 min atrás</span>
                 </div>
                 <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors duration-200">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full shadow-sm"></div>
-                  <span className="text-sm text-slate-700 font-semibold flex-1">Pagamento processado</span>
+                  <div className="w-3 h-3 bg-amber-500 rounded-full shadow-sm"></div>
+                  <span className="text-sm text-slate-700 font-semibold flex-1">Pré-cadastro recebido</span>
                   <span className="text-xs text-slate-500 font-medium">5 min atrás</span>
                 </div>
                 <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors duration-200">

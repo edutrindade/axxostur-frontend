@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "@/components/ui/toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog } from "@/components/Dialog";
@@ -14,6 +14,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { DataTable } from "@/components/users/data-table";
 import { createColumns } from "@/components/users/columns";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { formatCpf, formatPhone } from "@/utils/format";
 import { getUsers, createUser, updateUser, deleteUser, type User, type CreateUserData, type UpdateUserData } from "@/services/users";
@@ -51,6 +52,10 @@ const Users = () => {
     queryKey: ["users"],
     queryFn: getUsers,
   });
+
+  // Filtrar usuários por role
+  const adminUsers = useMemo(() => users.filter((user) => user.role?.toLowerCase() === "admin"), [users]);
+  const clientUsers = useMemo(() => users.filter((user) => user.role?.toLowerCase() === "client"), [users]);
 
   const createUserMutation = useMutation({
     mutationFn: createUser,
@@ -323,25 +328,58 @@ const Users = () => {
           <p className="text-slate-600">Gerencie todos os usuários administradores do sistema</p>
         </div>
 
-        <div className="space-y-4">
-          {isMobile ? (
-            <div className="space-y-4">
-              {isLoading ? (
-                <div className="flex justify-center items-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-              ) : users.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-slate-600 font-medium">Nenhum usuário encontrado</p>
-                </div>
-              ) : (
-                users.map((user) => <UserCard key={user.id} user={user} onEdit={handleEditUser} onDelete={handleDeleteUser} />)
-              )}
-            </div>
-          ) : (
-            <DataTable columns={columns} data={users} isLoading={isLoading} />
-          )}
-        </div>
+        <Tabs defaultValue="admin" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="admin" className="flex items-center gap-2">
+              <Icon name="shield" size={16} />
+              Administradores ({adminUsers.length})
+            </TabsTrigger>
+            <TabsTrigger value="client" className="flex items-center gap-2">
+              <Icon name="users" size={16} />
+              Clientes ({clientUsers.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="admin" className="space-y-4">
+            {isMobile ? (
+              <div className="space-y-4">
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : adminUsers.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-slate-600 font-medium">Nenhum usuário administrador encontrado</p>
+                  </div>
+                ) : (
+                  adminUsers.map((user) => <UserCard key={user.id} user={user} onEdit={handleEditUser} onDelete={handleDeleteUser} />)
+                )}
+              </div>
+            ) : (
+              <DataTable columns={columns} data={adminUsers} isLoading={isLoading} />
+            )}
+          </TabsContent>
+
+          <TabsContent value="client" className="space-y-4">
+            {isMobile ? (
+              <div className="space-y-4">
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : clientUsers.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-slate-600 font-medium">Nenhum usuário cliente encontrado</p>
+                  </div>
+                ) : (
+                  clientUsers.map((user) => <UserCard key={user.id} user={user} onEdit={handleEditUser} onDelete={handleDeleteUser} />)
+                )}
+              </div>
+            ) : (
+              <DataTable columns={columns} data={clientUsers} isLoading={isLoading} />
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
       <Dialog
         title="Confirmar Exclusão"

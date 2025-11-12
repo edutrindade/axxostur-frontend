@@ -12,6 +12,7 @@ export interface TenantInfo {
   notes: string;
   contactName: string;
   contactPhone: string;
+  approved: boolean;
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -189,4 +190,28 @@ export interface UpdateClientPayload {
 export const updateClient = async (id: string, payload: UpdateClientPayload): Promise<Client> => {
   const { data } = await api.patch<ApiClientItem>(`/clients/${id}`, payload);
   return mapApiClientToClient(data);
+};
+
+export const listPendingClients = async ({ page = 1, limit = 20, search }: ListClientsParams = {}): Promise<PaginatedClientsResponse> => {
+  const params: Record<string, string | number> = { page, limit };
+  if (search) params.search = search;
+
+  const { data } = await api.get<{ items: ApiClientItem[]; total: number; page: number; limit: number }>("/clients", { params });
+
+  const pendingClients = data.items.filter((item) => !item.tenant.approved && item.tenant.deletedAt === null);
+
+  return {
+    items: pendingClients.map(mapApiClientToClient),
+    total: pendingClients.length,
+    page: data.page,
+    limit: data.limit,
+  };
+};
+
+export const approveClient = async (tenantId: string): Promise<void> => {
+  await api.patch(`/tenants/${tenantId}/approve`);
+};
+
+export const rejectClient = async (tenantId: string): Promise<void> => {
+  await api.patch(`/tenants/${tenantId}/reject`);
 };
