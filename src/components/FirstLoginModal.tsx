@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/icon";
 import { toast } from "sonner";
 import { updateMyPassword } from "@/services/auth";
 import { useMutation } from "@tanstack/react-query";
+import nexxusLogo from "@/assets/icons/n-logo.png";
 
 interface FirstLoginModalProps {
   isOpen: boolean;
@@ -74,7 +75,7 @@ export const FirstLoginModal = ({ isOpen, userName, onSuccess }: FirstLoginModal
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="p-0 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200">
-              <img src="/src/assets/icons/n-logo.png" alt="Nexxus Logo" className="w-12 h-12" />
+              <img src={nexxusLogo} alt="Nexxus Logo" className="w-12 h-12" />
             </div>
             <div>
               <DialogTitle className="text-2xl font-bold text-slate-800">Bem-vindo ao Nexxus, {userName}!</DialogTitle>

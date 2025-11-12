@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { toast } from "sonner";
+import nexxusLogo from "@/assets/icons/n-logo.png";
 
 const Login = () => {
   const currentYear = new Date().getFullYear();
@@ -70,7 +71,7 @@ const Login = () => {
           <div className="max-w-md text-center space-y-8 animate-fade-in">
             <div className="space-y-6">
               <div className="w-20 h-20 mx-auto bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
-                <img src="/src/assets/icons/n-logo.png" alt="Nexxus Logo" className="w-14 h-14" />
+                <img src={nexxusLogo} alt="Nexxus Logo" className="w-14 h-14" />
               </div>
               <h1 className="text-4xl font-bold text-white leading-tight">
                 Consultas Tributárias

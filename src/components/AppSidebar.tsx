@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Icon } from "@/components/ui/icon";
+import nexxusLogo from "@/assets/icons/n-logo.png";
 
 interface AppSidebarProps {
   activeItem?: string;
@@ -80,7 +81,7 @@ export const AppSidebar = ({ activeItem }: AppSidebarProps) => {
         <div className="flex items-center gap-4 px-0 py-0">
           <div className="flex items-center justify-center p-0">
             {/* <Icon name="shield" size={32} className="text-blue-400" /> */}
-            <img src="/src/assets/icons/n-logo.png" alt="Nexxus Logo" className="h-16 w-16 object-contain" />
+            <img src={nexxusLogo} alt="Nexxus Logo" className="h-16 w-16 object-contain" />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="text-xl font-bold text-white tracking-tight">Nexxus</span>

@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { formatCnpj, formatPhone, formatCpf } from "@/utils/format";
 import { type Client } from "@/services/clients";
+import whatsappIcon from "@/assets/icons/wpp.png";
 
 interface ClientDetailsModalProps {
   client: Client | null;
@@ -139,7 +140,7 @@ export const ClientDetailsModal = ({ client, open, onOpenChange }: ClientDetails
                     <p className="text-sm font-bold text-slate-800">{formatPhone(tenant.contactPhone)}</p>
                     {tenant.contactPhone && (
                       <button type="button" className="h-9 w-9 p-1 hover:opacity-80 transition-opacity cursor-pointer" onClick={() => handleWhatsApp(tenant.contactPhone)}>
-                        <img src="/src/assets/icons/wpp.png" alt="WhatsApp" className="w-full h-full" />
+                        <img src={whatsappIcon} alt="WhatsApp" className="w-full h-full" />
                       </button>
                     )}
                   </div>
