@@ -99,6 +99,7 @@ export interface ListUsersParams {
   page?: number;
   limit?: number;
   search?: string;
+  role?: "ADMIN" | "CLIENT";
 }
 
 export interface PaginatedUsersResponse {
@@ -108,11 +109,12 @@ export interface PaginatedUsersResponse {
   limit: number;
 }
 
-export const listUsers = async ({ page = 1, limit = 20, search }: ListUsersParams = {}): Promise<PaginatedUsersResponse> => {
+export const listUsers = async ({ page = 1, limit = 20, search, role }: ListUsersParams = {}): Promise<PaginatedUsersResponse> => {
   const params = new URLSearchParams();
   params.append("page", page.toString());
   params.append("limit", limit.toString());
   if (search) params.append("search", search);
+  if (role) params.append("role", role);
 
   const response = await api.get<PaginatedApiUsersResponse>(`/users?${params.toString()}`);
   const { items, total, page: respPage, limit: respLimit } = response.data;

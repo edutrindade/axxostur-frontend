@@ -1,17 +1,21 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/users/data-table";
 import { createColumns } from "@/components/clients/columns";
 import { ClientDetailsModal } from "@/components/clients/ClientDetailsModal";
-import { listClients, type Client } from "@/services/clients";
+import { ClientEditDrawer } from "@/components/clients/ClientEditDrawer";
+import { listClients, updateClient, type Client } from "@/services/clients";
+import { toast } from "@/components/ui/toast";
 
 const Clients = () => {
+  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["clients", currentPage, limit],
@@ -23,15 +27,42 @@ const Clients = () => {
   const total = clients.length; // Total de clientes aprovados filtrados
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
 
+  const updateClientMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => updateClient(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      setIsEditDrawerOpen(false);
+      setSelectedClient(null);
+      toast.success("Sucesso", {
+        description: "Cliente atualizado com sucesso!",
+        duration: 3000,
+      });
+    },
+    onError: (error: Error & { response?: { data?: { message?: string } } }) => {
+      toast.error("Erro", {
+        description: error.response?.data?.message || "Erro ao atualizar cliente",
+        duration: 3000,
+      });
+    },
+  });
+
+  const handleEditClient = (client: Client) => {
+    setSelectedClient(client);
+    setIsEditDrawerOpen(true);
+  };
+
+  const handleViewClient = (client: Client) => {
+    setSelectedClient(client);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveClient = (id: string, data: any) => {
+    updateClientMutation.mutate({ id, data });
+  };
+
   const columns = createColumns({
-    onEdit: (client) => {
-      setSelectedClient(client);
-      setIsModalOpen(true);
-    },
-    onView: (client) => {
-      setSelectedClient(client);
-      setIsModalOpen(true);
-    },
+    onEdit: handleEditClient,
+    onView: handleViewClient,
   });
 
   const handlePageChange = (page: number) => {
@@ -60,6 +91,8 @@ const Clients = () => {
           <DataTable columns={columns} data={clients} isLoading={isLoading} />
 
           <ClientDetailsModal client={selectedClient} open={isModalOpen} onOpenChange={setIsModalOpen} />
+
+          <ClientEditDrawer client={selectedClient} open={isEditDrawerOpen} onOpenChange={setIsEditDrawerOpen} onSave={handleSaveClient} isSaving={updateClientMutation.isPending} />
 
           {!isLoading && totalPages > 1 && (
             <div className="flex items-center justify-between px-6 py-6 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border-2 border-slate-200 shadow-sm">

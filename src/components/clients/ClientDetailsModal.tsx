@@ -20,8 +20,8 @@ export const ClientDetailsModal = ({ client, open, onOpenChange }: ClientDetails
 
   if (!client) return null;
 
-  const { tenant, user } = client;
-  const address = tenant.address?.[0];
+  const { tenant } = client;
+  const address = tenant.address;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,23 +88,23 @@ export const ClientDetailsModal = ({ client, open, onOpenChange }: ClientDetails
                 <div>
                   <p className="text-xs text-slate-500 font-semibold mb-1">Nome</p>
                   <p className="text-sm font-bold text-slate-800">
-                    {user.firstName} {user.lastName}
+                    {client.firstName} {client.lastName}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-xs text-slate-500 font-semibold mb-1">CPF</p>
-                  <p className="text-sm font-bold text-slate-800">{formatCpf(user.cpf)}</p>
+                  <p className="text-sm font-bold text-slate-800">{formatCpf(client.cpf)}</p>
                 </div>
 
                 <div>
                   <p className="text-xs text-slate-500 font-semibold mb-1">E-mail</p>
-                  <p className="text-sm font-bold text-slate-800">{user.email}</p>
+                  <p className="text-sm font-bold text-slate-800">{client.email}</p>
                 </div>
 
                 <div>
                   <p className="text-xs text-slate-500 font-semibold mb-1">Telefone</p>
-                  <p className="text-sm font-bold text-slate-800">{formatPhone(user.phone)}</p>
+                  <p className="text-sm font-bold text-slate-800">{formatPhone(client.phone)}</p>
                 </div>
 
                 <div>
@@ -124,7 +124,7 @@ export const ClientDetailsModal = ({ client, open, onOpenChange }: ClientDetails
             <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
               <div className="flex items-center gap-2 mb-4">
                 <Icon name="phone" size={20} className="text-slate-700" />
-                <h4 className="text-lg font-bold text-slate-800">Contato da Empresa</h4>
+                <h4 className="text-lg font-bold text-slate-800">Contato</h4>
               </div>
 
               <div className="space-y-3">

@@ -23,6 +23,17 @@ export interface Admin {
   tenantId: string | null;
 }
 
+export interface Client {
+  id: string;
+  userId: string;
+  tenantId: string;
+  name: string;
+  phone: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type Role = "ADMIN" | "CLIENT";
 
 export interface AuthResponse {
@@ -31,6 +42,7 @@ export interface AuthResponse {
   token: string;
   refreshToken: string;
   admin?: Admin | null;
+  client?: Client | null;
 }
 
 export interface LoginRequest {
@@ -45,6 +57,9 @@ export const saveAuthData = (data: AuthResponse) => {
   localStorage.setItem("user", JSON.stringify(data.user));
   if (data.admin) {
     localStorage.setItem("admin", JSON.stringify(data.admin));
+  }
+  if (data.client) {
+    localStorage.setItem("client", JSON.stringify(data.client));
   }
 
   const expirationDate = new Date();
@@ -61,6 +76,7 @@ export const clearAuthData = () => {
   localStorage.removeItem("user");
   localStorage.removeItem("role");
   localStorage.removeItem("admin");
+  localStorage.removeItem("client");
 
   document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   document.cookie = "role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -109,6 +125,26 @@ export const isAdmin = (): boolean => {
 export const isClient = (): boolean => {
   const { role } = getAuthData();
   return role === "CLIENT";
+};
+
+export const getTenantId = (): string | null => {
+  const { role } = getAuthData();
+
+  if (role === "ADMIN") {
+    const adminStr = localStorage.getItem("admin");
+    if (adminStr) {
+      const admin = JSON.parse(adminStr) as Admin;
+      return admin.tenantId;
+    }
+  } else if (role === "CLIENT") {
+    const clientStr = localStorage.getItem("client");
+    if (clientStr) {
+      const client = JSON.parse(clientStr) as Client;
+      return client.tenantId;
+    }
+  }
+
+  return null;
 };
 
 export interface UpdatePasswordRequest {

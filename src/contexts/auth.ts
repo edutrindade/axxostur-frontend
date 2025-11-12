@@ -20,6 +20,7 @@ export type Role = "ADMIN" | "CLIENT";
 export interface AuthContextType {
   user: User | null;
   role: Role | null;
+  tenantId: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   isAdmin: boolean;

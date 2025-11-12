@@ -35,14 +35,17 @@ export const createPendingColumns = ({ onApprove, onReject, onView }: ColumnProp
     },
   },
   {
-    accessorKey: "name",
+    accessorKey: "firstName",
     header: "Responsável",
     cell: ({ row }) => {
-      const name = row.getValue("name") as string;
+      const firstName = row.original.firstName;
+      const lastName = row.original.lastName;
       const email = row.original.email;
       return (
         <div className="flex flex-col">
-          <span className="font-semibold text-slate-900">{name}</span>
+          <span className="font-semibold text-slate-900">
+            {firstName} {lastName}
+          </span>
           <span className="text-xs text-slate-500">{email}</span>
         </div>
       );

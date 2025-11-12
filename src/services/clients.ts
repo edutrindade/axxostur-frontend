@@ -1,25 +1,5 @@
 import { api } from "./api";
 
-export interface TenantInfo {
-  id: string;
-  name: string;
-  cnpj: string;
-  cnae: string | null;
-  cnaeSecundario: string | null;
-  iMendesPassword: string | null;
-  fantasyName: string;
-  logoUrl: string;
-  notes: string;
-  contactName: string;
-  contactPhone: string;
-  approved: boolean;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-  address?: AddressInfo[];
-}
-
 export interface AddressInfo {
   id: string;
   tenantId: string;
@@ -31,6 +11,34 @@ export interface AddressInfo {
   state: string;
   country: string;
   zipCode: string;
+}
+
+export interface RoleInfo {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TenantInfo {
+  id: string;
+  name: string;
+  cnpj: string;
+  cnae: string | null;
+  cnaeSecundario: string | null;
+  iMendesPassword: string | null;
+  fantasyName: string;
+  logoUrl: string | null;
+  notes: string | null;
+  contactName: string;
+  contactPhone: string;
+  approved: boolean;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  address?: AddressInfo;
 }
 
 export interface UserInfo {
@@ -53,41 +61,53 @@ export interface UserInfo {
 
 export interface ApiClientItem {
   id: string;
-  tenantId: string;
   userId: string;
-  name: string;
-  phone: string;
+  tenantId: string;
+  firstName: string;
+  lastName: string;
   email: string;
+  phone: string;
+  cpf: string;
+  role: RoleInfo;
+  active: boolean;
+  lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
   tenant: TenantInfo;
-  user: UserInfo;
 }
 
 export interface Client {
   id: string;
-  tenantId: string;
   userId: string;
-  name: string;
-  phone: string;
+  tenantId: string;
+  firstName: string;
+  lastName: string;
   email: string;
+  phone: string;
+  cpf: string;
+  role: RoleInfo;
+  active: boolean;
+  lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
   tenant: TenantInfo;
-  user: UserInfo;
 }
 
 const mapApiClientToClient = (c: ApiClientItem): Client => ({
   id: c.id,
-  tenantId: c.tenantId,
   userId: c.userId,
-  name: c.name,
-  phone: c.phone,
+  tenantId: c.tenantId,
+  firstName: c.firstName,
+  lastName: c.lastName,
   email: c.email,
+  phone: c.phone,
+  cpf: c.cpf,
+  role: c.role,
+  active: c.active,
+  lastLoginAt: c.lastLoginAt,
   createdAt: c.createdAt,
   updatedAt: c.updatedAt,
   tenant: c.tenant,
-  user: c.user,
 });
 
 export interface ListClientsParams {
@@ -165,6 +185,8 @@ export interface UpdateClientPayload {
   tenantName?: string;
   tenantCnpj?: string;
   tenantFantasyName?: string;
+  tenantCnae?: string;
+  tenantCnaeSecundario?: string;
   tenantLogoUrl?: string;
   tenantNotes?: string;
   tenantContactName?: string;

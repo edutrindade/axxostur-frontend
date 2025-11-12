@@ -1,7 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { toast } from "@/components/ui/toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Dialog } from "@/components/Dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,9 +14,10 @@ import { DataTable } from "@/components/users/data-table";
 import { createColumns } from "@/components/users/columns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 import { formatCpf, formatPhone } from "@/utils/format";
-import { getUsers, createUser, updateUser, deleteUser, type User, type CreateUserData, type UpdateUserData } from "@/services/users";
+import { createUser, updateUser, deleteUser, listUsers, type User, type CreateUserData, type UpdateUserData } from "@/services/users";
 
 interface UserFormData {
   firstName: string;
@@ -36,6 +36,7 @@ const Users = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [activeTab, setActiveTab] = useState<"admin" | "client">("admin");
   const [formData, setFormData] = useState<UserFormData>({
     firstName: "",
     lastName: "",
@@ -46,18 +47,22 @@ const Users = () => {
     cpf: "",
   });
 
-  const {
-    data: users = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["users"],
-    queryFn: getUsers,
+  const { data: adminUsersData, isLoading: isLoadingAdmin } = useQuery({
+    queryKey: ["users", "ADMIN"],
+    queryFn: () => listUsers({ role: "ADMIN" }),
+    enabled: activeTab === "admin",
   });
 
-  // Filtrar usuários por role
-  const adminUsers = useMemo(() => users.filter((user) => user.role?.toLowerCase() === "admin"), [users]);
-  const clientUsers = useMemo(() => users.filter((user) => user.role?.toLowerCase() === "client"), [users]);
+  const { data: clientUsersData, isLoading: isLoadingClient } = useQuery({
+    queryKey: ["users", "CLIENT"],
+    queryFn: () => listUsers({ role: "CLIENT" }),
+    enabled: activeTab === "client",
+  });
+
+  const adminUsers = adminUsersData?.items || [];
+  const clientUsers = clientUsersData?.items || [];
+  const adminTotal = adminUsersData?.total || 0;
+  const clientTotal = clientUsersData?.total || 0;
 
   const createUserMutation = useMutation({
     mutationFn: createUser,
@@ -229,13 +234,6 @@ const Users = () => {
     onDelete: handleDeleteUser,
   });
 
-  if (error) {
-    toast.error("Erro", {
-      description: "Erro ao carregar usuários",
-      duration: 3000,
-    });
-  }
-
   interface UserCardProps {
     user: User;
     onEdit: (user: User) => void;
@@ -338,22 +336,22 @@ const Users = () => {
           <p className="text-slate-600">Gerencie todos os usuários administradores do sistema</p>
         </div>
 
-        <Tabs defaultValue="admin" className="space-y-4">
+        <Tabs defaultValue="admin" value={activeTab} onValueChange={(value) => setActiveTab(value as "admin" | "client")} className="space-y-4">
           <TabsList>
             <TabsTrigger value="admin" className="flex items-center gap-2">
               <Icon name="shield" size={16} />
-              Administradores ({adminUsers.length})
+              Administradores ({adminTotal})
             </TabsTrigger>
             <TabsTrigger value="client" className="flex items-center gap-2">
               <Icon name="users" size={16} />
-              Clientes ({clientUsers.length})
+              Clientes ({clientTotal})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="admin" className="space-y-4">
             {isMobile ? (
               <div className="space-y-4">
-                {isLoading ? (
+                {isLoadingAdmin ? (
                   <div className="flex justify-center items-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   </div>
@@ -366,14 +364,14 @@ const Users = () => {
                 )}
               </div>
             ) : (
-              <DataTable columns={columns} data={adminUsers} isLoading={isLoading} />
+              <DataTable columns={columns} data={adminUsers} isLoading={isLoadingAdmin} />
             )}
           </TabsContent>
 
           <TabsContent value="client" className="space-y-4">
             {isMobile ? (
               <div className="space-y-4">
-                {isLoading ? (
+                {isLoadingClient ? (
                   <div className="flex justify-center items-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   </div>
@@ -386,22 +384,31 @@ const Users = () => {
                 )}
               </div>
             ) : (
-              <DataTable columns={columns} data={clientUsers} isLoading={isLoading} />
+              <DataTable columns={columns} data={clientUsers} isLoading={isLoadingClient} />
             )}
           </TabsContent>
         </Tabs>
       </div>
-      <Dialog
-        title="Confirmar Exclusão"
-        description={`Tem certeza que deseja excluir o usuário ${userToDelete ? `${userToDelete.firstName} ${userToDelete.lastName}`.trim() : ""}? Esta ação não pode ser desfeita.`}
-        isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        onConfirm={confirmDeleteUser}
-        confirmText="Excluir"
-        cancelText="Cancelar"
-        variant="destructive"
-        showIcon={true}
-      />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold">Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              Tem certeza que deseja excluir o usuário <span className="font-bold text-slate-800">{userToDelete ? `${userToDelete.firstName} ${userToDelete.lastName}`.trim() : ""}</span>?
+              <br />
+              <br />
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteUser} className="bg-red-600 hover:bg-red-700" disabled={deleteUserMutation.isPending}>
+              {deleteUserMutation.isPending ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

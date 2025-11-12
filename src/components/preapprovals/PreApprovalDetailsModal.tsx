@@ -16,8 +16,8 @@ interface PreApprovalDetailsModalProps {
 export const PreApprovalDetailsModal = ({ client, open, onOpenChange, onApprove, onReject }: PreApprovalDetailsModalProps) => {
   if (!client) return null;
 
-  const { tenant, user } = client;
-  const address = tenant.address?.[0];
+  const { tenant } = client;
+  const address = tenant.address;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -98,23 +98,23 @@ export const PreApprovalDetailsModal = ({ client, open, onOpenChange, onApprove,
               <div>
                 <p className="text-xs text-slate-500 font-semibold mb-1">Nome Completo</p>
                 <p className="text-sm font-bold text-slate-800">
-                  {user.firstName} {user.lastName}
+                  {client.firstName} {client.lastName}
                 </p>
               </div>
 
               <div>
                 <p className="text-xs text-slate-500 font-semibold mb-1">CPF</p>
-                <p className="text-sm font-bold text-slate-800">{formatCpf(user.cpf)}</p>
+                <p className="text-sm font-bold text-slate-800">{formatCpf(client.cpf)}</p>
               </div>
 
               <div>
                 <p className="text-xs text-slate-500 font-semibold mb-1">E-mail</p>
-                <p className="text-sm font-bold text-slate-800">{user.email}</p>
+                <p className="text-sm font-bold text-slate-800">{client.email}</p>
               </div>
 
               <div>
                 <p className="text-xs text-slate-500 font-semibold mb-1">Telefone</p>
-                <p className="text-sm font-bold text-slate-800">{formatPhone(user.phone)}</p>
+                <p className="text-sm font-bold text-slate-800">{formatPhone(client.phone)}</p>
               </div>
 
               <div className="md:col-span-2">

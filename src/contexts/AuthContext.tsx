@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { AuthContext, type User, type AuthContextType, type Role } from "./auth";
-import { login as apiLogin, logout as apiLogout, getAuthData, isAdmin as checkIsAdmin, isClient as checkIsClient } from "../services/auth";
+import { login as apiLogin, logout as apiLogout, getAuthData, isAdmin as checkIsAdmin, isClient as checkIsClient, getTenantId } from "../services/auth";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -77,6 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     role,
+    tenantId: getTenantId(),
     isAuthenticated: !!user,
     isLoading: isLoading || loginMutation.isPending,
     isAdmin: checkIsAdmin(),
