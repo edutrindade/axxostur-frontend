@@ -154,7 +154,6 @@ const PreRegistration = () => {
       country: "Brasil",
     });
 
-    // Preencher responsável (primeiro sócio)
     if (data.socios && data.socios.length > 0) {
       const { firstName: fName, lastName: lName } = splitName(data.socios[0].nome);
       setFirstName(fName);
@@ -177,20 +176,35 @@ const PreRegistration = () => {
       return;
     }
 
-    // Verificar no localStorage primeiro
-    const cachedData = getCnpjDataFromLocalStorage(cleanCnpj);
-    if (cachedData) {
-      toast.info("Dados encontrados no cache!");
-      fillFormWithCnpjData(cachedData);
-      return;
-    }
-
-    // Buscar da API
     setIsLoadingCnpj(true);
+    const startTime = Date.now();
+
     try {
-      const data = await consultCnpj(tenantCnpj);
-      saveCnpjDataToLocalStorage(cleanCnpj, data);
-      fillFormWithCnpjData(data);
+      // Verificar no localStorage primeiro
+      const cachedData = getCnpjDataFromLocalStorage(cleanCnpj);
+
+      if (cachedData) {
+        // Garantir que o loading dure pelo menos 2 segundos
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = Math.max(0, 2000 - elapsedTime);
+
+        await new Promise((resolve) => setTimeout(resolve, remainingTime));
+
+        toast.info("Dados encontrados no cache!");
+        fillFormWithCnpjData(cachedData);
+      } else {
+        // Buscar da API
+        const data = await consultCnpj(tenantCnpj);
+
+        // Garantir que o loading dure pelo menos 2 segundos
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = Math.max(0, 2000 - elapsedTime);
+
+        await new Promise((resolve) => setTimeout(resolve, remainingTime));
+
+        saveCnpjDataToLocalStorage(cleanCnpj, data);
+        fillFormWithCnpjData(data);
+      }
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || "Erro ao consultar CNPJ";
       toast.error("Erro na consulta", {
