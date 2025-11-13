@@ -3,10 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { formatCpf, formatCnpj, formatPhone, formatZipCode } from "@/utils/format.ts";
 import { consultarCep } from "@/services/viaCep.ts";
 import { createPreRegistration } from "@/services/preRegistration.ts";
+import { consultCnpj, type CNPJConsultResponse } from "@/services/cnpj.ts";
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
+import { ConfirmationModal } from "@/components/ConfirmationModal";
 
 interface AddressForm {
   street: string;
@@ -24,7 +28,8 @@ const PreRegistration = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
-  const [cepFound, setCepFound] = useState(false);
+  const [isLoadingCnpj, setIsLoadingCnpj] = useState(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   const [tenantName, setTenantName] = useState("");
   const [tenantCnpj, setTenantCnpj] = useState("");
@@ -32,6 +37,7 @@ const PreRegistration = () => {
   const [tenantCnaeSecundario, setTenantCnaeSecundario] = useState("");
   const [tenantFantasyName, setTenantFantasyName] = useState("");
   const [tenantContactPhone, setTenantContactPhone] = useState("");
+  const [tenantRegime, setTenantRegime] = useState("");
 
   const [address, setAddress] = useState<AddressForm>({
     street: "",
@@ -50,6 +56,151 @@ const PreRegistration = () => {
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
 
+  // Helper para dividir nome completo em primeiro e último nome
+  const splitName = (fullName: string): { firstName: string; lastName: string } => {
+    const nameParts = fullName.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts[nameParts.length - 1] || "";
+
+    // Capitalizar apenas a primeira letra
+    return {
+      firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase(),
+      lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase(),
+    };
+  };
+
+  // Helper para capitalizar apenas primeira letra de cada palavra
+  const capitalizeText = (text: string): string => {
+    return text
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  // Helper para formatar telefone (adiciona 9 se tiver 8 dígitos)
+  const formatPhoneNumber = (ddd: string, phone: string): string => {
+    const phoneDigits = phone.replace(/\D/g, "");
+    const phoneFormatted = phoneDigits.length === 8 ? `9${phoneDigits}` : phoneDigits;
+    return formatPhone(`${ddd}${phoneFormatted}`);
+  };
+
+  // Função para salvar no localStorage
+  const saveCnpjDataToLocalStorage = (cnpj: string, data: CNPJConsultResponse) => {
+    try {
+      localStorage.setItem(`cnpj_${cnpj.replace(/\D/g, "")}`, JSON.stringify(data));
+    } catch (error) {
+      console.error("Erro ao salvar no localStorage:", error);
+    }
+  };
+
+  // Função para buscar do localStorage
+  const getCnpjDataFromLocalStorage = (cnpj: string): CNPJConsultResponse | null => {
+    try {
+      const data = localStorage.getItem(`cnpj_${cnpj.replace(/\D/g, "")}`);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error("Erro ao ler do localStorage:", error);
+      return null;
+    }
+  };
+
+  // Função para preencher formulário com dados do CNPJ
+  const fillFormWithCnpjData = (data: CNPJConsultResponse) => {
+    // Preencher dados da empresa
+    setTenantName(data.razao_social);
+    setTenantFantasyName(data.estabelecimento.nome_fantasia || data.razao_social);
+
+    // Formatar telefone
+    if (data.estabelecimento.ddd1 && data.estabelecimento.telefone1) {
+      const formattedPhone = formatPhoneNumber(data.estabelecimento.ddd1, data.estabelecimento.telefone1);
+      setTenantContactPhone(formattedPhone);
+    }
+
+    // CNAE Principal e Secundário
+    if (data.estabelecimento.atividade_principal) {
+      setTenantCnae(data.estabelecimento.atividade_principal.subclasse);
+    }
+
+    if (data.estabelecimento.atividades_secundarias && data.estabelecimento.atividades_secundarias.length > 0) {
+      setTenantCnaeSecundario(data.estabelecimento.atividades_secundarias[0].subclasse);
+    }
+
+    // Regime Tributário
+    if (data.simples) {
+      if (data.simples.mei === "Sim") {
+        setTenantRegime("MEI");
+      } else if (data.simples.simples === "Sim") {
+        setTenantRegime("Simples Nacional");
+      } else {
+        setTenantRegime("Lucro Presumido"); // Default para empresas não optantes
+      }
+    }
+
+    // Preencher endereço com capitalização
+    const streetType = capitalizeText(data.estabelecimento.tipo_logradouro);
+    const streetName = capitalizeText(data.estabelecimento.logradouro);
+    const neighborhood = capitalizeText(data.estabelecimento.bairro);
+    const complement = data.estabelecimento.complemento ? capitalizeText(data.estabelecimento.complemento) : "";
+
+    setAddress({
+      zipCode: formatZipCode(data.estabelecimento.cep),
+      street: `${streetType} ${streetName}`,
+      number: data.estabelecimento.numero,
+      complement: complement,
+      neighborhood: neighborhood,
+      city: data.estabelecimento.cidade.nome,
+      state: data.estabelecimento.estado.sigla,
+      country: "Brasil",
+    });
+
+    // Preencher responsável (primeiro sócio)
+    if (data.socios && data.socios.length > 0) {
+      const { firstName: fName, lastName: lName } = splitName(data.socios[0].nome);
+      setFirstName(fName);
+      setLastName(lName);
+    }
+
+    toast.success("Dados preenchidos automaticamente!", {
+      description: "Revise as informações e complete os dados restantes.",
+    });
+  };
+
+  // Função para consultar CNPJ
+  const handleCnpjSearch = async () => {
+    const cleanCnpj = tenantCnpj.replace(/\D/g, "");
+
+    if (cleanCnpj.length !== 14) {
+      toast.error("CNPJ incompleto", {
+        description: "Digite os 14 dígitos do CNPJ",
+      });
+      return;
+    }
+
+    // Verificar no localStorage primeiro
+    const cachedData = getCnpjDataFromLocalStorage(cleanCnpj);
+    if (cachedData) {
+      toast.info("Dados encontrados no cache!");
+      fillFormWithCnpjData(cachedData);
+      return;
+    }
+
+    // Buscar da API
+    setIsLoadingCnpj(true);
+    try {
+      const data = await consultCnpj(tenantCnpj);
+      saveCnpjDataToLocalStorage(cleanCnpj, data);
+      fillFormWithCnpjData(data);
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || "Erro ao consultar CNPJ";
+      toast.error("Erro na consulta", {
+        description: errorMessage,
+      });
+    } finally {
+      setIsLoadingCnpj(false);
+    }
+  };
+
   const handleCepBlur = async () => {
     const cleanCep = address.zipCode.replace(/\D/g, "");
     if (cleanCep.length === 8) {
@@ -59,12 +210,11 @@ const PreRegistration = () => {
         if (addressData) {
           setAddress((prev) => ({
             ...prev,
-            street: addressData.street,
-            neighborhood: addressData.neighborhood,
+            street: capitalizeText(addressData.street),
+            neighborhood: capitalizeText(addressData.neighborhood),
             city: addressData.city,
             state: addressData.state,
           }));
-          setCepFound(true);
           toast.success("CEP encontrado com sucesso!");
         } else {
           toast.error("CEP não encontrado");
@@ -78,7 +228,7 @@ const PreRegistration = () => {
   };
 
   const validateStep1 = () => {
-    if (!tenantName || !tenantCnpj || !tenantCnae || !tenantFantasyName || !tenantContactPhone) {
+    if (!tenantName || !tenantCnpj || !tenantCnae || !tenantFantasyName || !tenantContactPhone || !tenantRegime) {
       toast.error("Preencha todos os campos obrigatórios");
       return false;
     }
@@ -122,6 +272,12 @@ const PreRegistration = () => {
       return;
     }
 
+    // Abrir modal de confirmação
+    setShowConfirmationModal(true);
+  };
+
+  // Nova função para finalizar o cadastro após confirmação
+  const handleFinalSubmit = async () => {
     setIsLoading(true);
 
     try {
@@ -147,6 +303,8 @@ const PreRegistration = () => {
         description: "Redirecionando...",
       });
 
+      setShowConfirmationModal(false);
+
       setTimeout(() => {
         navigate("/pre-registration/success", {
           state: { fromPreRegistration: true },
@@ -168,6 +326,7 @@ const PreRegistration = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden animate-fade-in">
+      {isLoadingCnpj && <LoadingOverlay message="Consultando CNPJ..." />}
       <div
         className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800"
         style={{
@@ -206,10 +365,12 @@ const PreRegistration = () => {
                     <p className="text-blue-100 text-sm">Preencha os dados para criar sua conta</p>
                   </div>
                 </div>
-                <Link to="/login" className="flex items-center space-x-2 text-white hover:text-blue-100 transition-colors">
-                  <Icon name="arrowLeft" size={16} />
-                  <span className="text-sm">Voltar</span>
-                </Link>
+                {step === 1 && (
+                  <Link to="/login" className="flex items-center space-x-2 text-white hover:text-blue-100 transition-colors">
+                    <Icon name="arrowLeft" size={16} />
+                    <span className="text-sm">Voltar</span>
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -233,6 +394,18 @@ const PreRegistration = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {step === 1 && (
                   <div className="space-y-4 animate-fade-in">
+                    {/* CNPJ como primeiro campo */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700">CNPJ *</label>
+                      <div className="relative">
+                        <Input value={tenantCnpj} onChange={(e) => setTenantCnpj(formatCnpj(e.target.value))} placeholder="00.000.000/0000-00" className="h-12 pr-12" required />
+                        <Button type="button" onClick={handleCnpjSearch} disabled={tenantCnpj.replace(/\D/g, "").length !== 14} className="absolute right-1 top-1/2 transform -translate-y-1/2 h-10 px-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
+                          <Icon name="search" size={16} />
+                        </Button>
+                      </div>
+                      <p className="text-xs text-slate-500">Digite o CNPJ e clique na lupa para buscar os dados</p>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700">Razão Social *</label>
@@ -247,25 +420,43 @@ const PreRegistration = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">CNPJ *</label>
-                        <Input value={tenantCnpj} onChange={(e) => setTenantCnpj(formatCnpj(e.target.value))} placeholder="00.000.000/0000-00" className="h-12" required />
+                        <label className="text-sm font-medium text-slate-700">Telefone *</label>
+                        <Input value={tenantContactPhone} onChange={(e) => setTenantContactPhone(formatPhone(e.target.value))} placeholder="(00) 00000-0000" className="h-12" required />
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">Telefone *</label>
-                        <Input value={tenantContactPhone} onChange={(e) => setTenantContactPhone(formatPhone(e.target.value))} placeholder="(00) 00000-0000" className="h-12" required />
+                        <label className="text-sm font-medium text-slate-700">CNAE Principal *</label>
+                        <Input value={tenantCnae} onChange={(e) => setTenantCnae(e.target.value)} placeholder="0000-0/00" className="h-12" required />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">CNAE Principal *</label>
-                        <Input value={tenantCnae} onChange={(e) => setTenantCnae(e.target.value)} placeholder="0000-0/00" className="h-12" required />
+                        <label className="text-sm font-medium text-slate-700">CNAE Secundário</label>
+                        <Input value={tenantCnaeSecundario} onChange={(e) => setTenantCnaeSecundario(e.target.value)} placeholder="0000-0/00" className="h-12" />
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">CNAE Secundário</label>
-                        <Input value={tenantCnaeSecundario} onChange={(e) => setTenantCnaeSecundario(e.target.value)} placeholder="0000-0/00" className="h-12" />
+                        <label className="text-sm font-medium text-slate-700">Regime Tributário *</label>
+                        <Select value={tenantRegime} onValueChange={setTenantRegime} required>
+                          <SelectTrigger className="h-12">
+                            <SelectValue placeholder="Selecione o regime" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem className="font-normal" value="MEI">
+                              MEI - Microempreendedor Individual
+                            </SelectItem>
+                            <SelectItem className="font-normal" value="Simples Nacional">
+                              Simples Nacional
+                            </SelectItem>
+                            <SelectItem className="font-normal" value="Lucro Presumido">
+                              Lucro Presumido
+                            </SelectItem>
+                            <SelectItem className="font-normal" value="Lucro Real">
+                              Lucro Real
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
@@ -312,19 +503,19 @@ const PreRegistration = () => {
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700">Cidade *</label>
-                        <Input value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} placeholder="Nome da cidade" className="h-12" required disabled={cepFound} />
+                        <Input value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} placeholder="Nome da cidade" className="h-12" required disabled />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700">Estado *</label>
-                        <Input value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} placeholder="UF" maxLength={2} className="h-12" required disabled={cepFound} />
+                        <Input value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} placeholder="UF" maxLength={2} className="h-12" required disabled />
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700">País *</label>
-                        <Input value={address.country} onChange={(e) => setAddress({ ...address, country: e.target.value })} placeholder="Brasil" className="h-12" required disabled={cepFound} />
+                        <Input value={address.country} onChange={(e) => setAddress({ ...address, country: e.target.value })} placeholder="Brasil" className="h-12" required disabled />
                       </div>
                     </div>
                   </div>
@@ -410,6 +601,28 @@ const PreRegistration = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onClose={() => setShowConfirmationModal(false)}
+        onConfirm={handleFinalSubmit}
+        data={{
+          tenantName,
+          tenantCnpj,
+          tenantCnae,
+          tenantCnaeSecundario,
+          tenantFantasyName,
+          tenantContactPhone,
+          tenantRegime,
+          address,
+          firstName,
+          lastName,
+          phone,
+          email,
+          cpf,
+        }}
+        isLoading={isLoading}
+      />
     </div>
   );
 };
