@@ -128,7 +128,39 @@ export interface TaxConsultResponse {
   baixaSimilaridade: unknown[];
 }
 
+export interface NcmItem {
+  ncm: string;
+  cest: string;
+  ex: string;
+}
+
+export interface NcmProduct {
+  imendesCode: number;
+  groupDescription: string;
+  ncm: string;
+  ncmDescription: string;
+  cest?: string;
+  cestDescription?: string;
+  ex?: string;
+}
+
+export interface NcmConsultResponse {
+  success: boolean;
+  total: number;
+  found: number;
+  notFound: number;
+  products: NcmProduct[];
+  notFoundNcms: string[];
+}
+
 export async function consultTax(payload: TaxConsultRequest): Promise<TaxConsultResponse> {
   const { data } = await api.post<TaxConsultResponse>("/tax/consult", payload);
+  return data;
+}
+
+export async function consultNcm(ncms: NcmItem[], tenantId: string): Promise<NcmConsultResponse> {
+  const { data } = await api.post<NcmConsultResponse>("/ncm/consult", ncms, {
+    params: { tenantId },
+  });
   return data;
 }
