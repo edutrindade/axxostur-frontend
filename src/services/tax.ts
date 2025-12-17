@@ -164,3 +164,14 @@ export async function consultNcm(ncms: NcmItem[], tenantId: string): Promise<Ncm
   });
   return data;
 }
+
+export async function consultNcmByImendesCode(imendesCode: number, tenantId: string): Promise<TaxConsultResponse> {
+  const { data } = await api.post<TaxConsultResponse>(
+    "/ncm/query-by-imendes-code",
+    { imendesCode },
+    {
+      params: { tenantId },
+    }
+  );
+  return data;
+}

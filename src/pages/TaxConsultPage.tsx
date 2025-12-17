@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { DataTable } from "@/components/users/data-table";
-import { consultTax, type TaxConsultResponse, type TaxGroupItem, consultNcm, type NcmConsultResponse, type NcmProduct } from "@/services/tax";
+import { consultTax, type TaxConsultResponse, type TaxGroupItem, consultNcm, type NcmConsultResponse, type NcmProduct, consultNcmByImendesCode } from "@/services/tax";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
@@ -35,6 +35,8 @@ export default function TaxConsultPage() {
   const [response, setResponse] = useState<TaxConsultResponse | null>(null);
   const [ncmResponse, setNcmResponse] = useState<NcmConsultResponse | null>(null);
   const [detailsItem, setDetailsItem] = useState<TaxGroupItem | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   const isGtinValid = gtin.trim().length >= 8 && gtin.trim().length <= 14;
   const isDescricaoValid = descricao.trim().length >= 3;
@@ -147,6 +149,35 @@ export default function TaxConsultPage() {
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  const handleViewNcmDetails = async (imendesCode: number, product: NcmProduct) => {
+    if (!tenantId) {
+      toast.error("Erro de autenticação", {
+        description: "Tenant ID não encontrado.",
+      });
+      return;
+    }
+
+    setDetailsLoading(true);
+    try {
+      const data = await consultNcmByImendesCode(imendesCode, tenantId);
+      if (data.grupo && data.grupo.length > 0) {
+        setDetailsItem(data.grupo[0]);
+        setDetailsModalOpen(true);
+      } else {
+        toast.error("Nenhum detalhe encontrado", {
+          description: "Não foi possível obter os detalhes deste produto.",
+        });
+      }
+    } catch (e: any) {
+      const errorMessage = e?.response?.data?.message || e?.message || "Falha ao consultar detalhes";
+      toast.error("Erro ao obter detalhes", {
+        description: errorMessage,
+      });
+    } finally {
+      setDetailsLoading(false);
     }
   };
 
@@ -462,7 +493,15 @@ export default function TaxConsultPage() {
                               )}
                             </div>
                           </div>
-                          <Button variant="ghost" size="sm" onClick={() => setDetailsItem(item)} className="h-8 w-8 p-0 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setDetailsItem(item);
+                              setDetailsModalOpen(true);
+                            }}
+                            className="h-8 w-8 p-0 shrink-0"
+                          >
                             <Icon name="eye" size={16} />
                           </Button>
                         </div>
@@ -545,23 +584,30 @@ export default function TaxConsultPage() {
                         <Card key={`${ncm}-${idx}`} className="border-2 border-slate-200 hover:border-blue-300 transition-colors">
                           <CardContent className="pt-4">
                             <div className="space-y-3">
-                              <div>
-                                <span className="text-xs text-slate-600 block mb-1">Grupo</span>
-                                <span className="text-sm font-medium text-slate-900">{product.groupDescription}</span>
-                              </div>
-                              <div>
-                                <span className="text-xs text-slate-600 block mb-1">Descrição</span>
-                                <span className="text-sm font-medium text-slate-900">{product.ncmDescription}</span>
-                              </div>
-                              {product.cestDescription && (
-                                <div>
-                                  <span className="text-xs text-slate-600 block mb-1">CEST</span>
-                                  <div className="text-sm">
-                                    <span className="font-medium text-slate-900">{product.cest}</span>
-                                    <span className="text-slate-600"> - {product.cestDescription}</span>
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                  <div>
+                                    <span className="text-xs text-slate-600 block mb-1">Grupo</span>
+                                    <span className="text-sm font-medium text-slate-900">{product.groupDescription}</span>
                                   </div>
+                                  <div className="mt-2">
+                                    <span className="text-xs text-slate-600 block mb-1">Descrição</span>
+                                    <span className="text-sm font-medium text-slate-900">{product.ncmDescription}</span>
+                                  </div>
+                                  {product.cestDescription && (
+                                    <div className="mt-2">
+                                      <span className="text-xs text-slate-600 block mb-1">CEST</span>
+                                      <div className="text-sm">
+                                        <span className="font-medium text-slate-900">{product.cest}</span>
+                                        <span className="text-slate-600"> - {product.cestDescription}</span>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
-                              )}
+                                <Button variant="ghost" size="sm" onClick={() => handleViewNcmDetails(product.imendesCode, product)} disabled={detailsLoading} className="h-8 w-8 p-0 shrink-0">
+                                  <Icon name="eye" size={16} />
+                                </Button>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
@@ -576,6 +622,7 @@ export default function TaxConsultPage() {
                             <th className="text-left py-3 px-4 font-semibold text-slate-700">Descrição NCM</th>
                             <th className="text-left py-3 px-4 font-semibold text-slate-700">CEST</th>
                             <th className="text-left py-3 px-4 font-semibold text-slate-700">EX</th>
+                            <th className="text-left py-3 px-4 font-semibold text-slate-700">Ações</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -593,6 +640,11 @@ export default function TaxConsultPage() {
                                 {!product.cest && <span className="text-slate-400">-</span>}
                               </td>
                               <td className="py-3 px-4">{product.ex || "-"}</td>
+                              <td className="py-3 px-4">
+                                <Button variant="ghost" size="sm" onClick={() => handleViewNcmDetails(product.imendesCode, product)} disabled={detailsLoading} className="h-8 w-8 p-0">
+                                  <Icon name="eye" size={16} />
+                                </Button>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -606,7 +658,13 @@ export default function TaxConsultPage() {
         </Card>
       )}
 
-      <Dialog open={!!detailsItem} onOpenChange={(open) => !open && setDetailsItem(null)}>
+      <Dialog
+        open={detailsModalOpen}
+        onOpenChange={(open) => {
+          setDetailsModalOpen(open);
+          if (!open) setDetailsItem(null);
+        }}
+      >
         <DialogContent className="max-w-[90vw] lg:max-w-7xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="space-y-3 pb-6 border-b">
             <div className="flex items-start justify-between">
