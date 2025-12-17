@@ -152,7 +152,7 @@ export default function TaxConsultPage() {
     }
   };
 
-  const handleViewNcmDetails = async (imendesCode: number, product: NcmProduct) => {
+  const handleViewNcmDetails = async (imendesCode: number) => {
     if (!tenantId) {
       toast.error("Erro de autenticação", {
         description: "Tenant ID não encontrado.",
@@ -604,7 +604,7 @@ export default function TaxConsultPage() {
                                     </div>
                                   )}
                                 </div>
-                                <Button variant="ghost" size="sm" onClick={() => handleViewNcmDetails(product.imendesCode, product)} disabled={detailsLoading} className="h-8 w-8 p-0 shrink-0">
+                                <Button variant="ghost" size="sm" onClick={() => handleViewNcmDetails(product.imendesCode)} disabled={detailsLoading} className="h-8 w-8 p-0 shrink-0">
                                   <Icon name="eye" size={16} />
                                 </Button>
                               </div>
@@ -641,7 +641,7 @@ export default function TaxConsultPage() {
                               </td>
                               <td className="py-3 px-4">{product.ex || "-"}</td>
                               <td className="py-3 px-4">
-                                <Button variant="ghost" size="sm" onClick={() => handleViewNcmDetails(product.imendesCode, product)} disabled={detailsLoading} className="h-8 w-8 p-0">
+                                <Button variant="ghost" size="sm" onClick={() => handleViewNcmDetails(product.imendesCode)} disabled={detailsLoading} className="h-8 w-8 p-0">
                                   <Icon name="eye" size={16} />
                                 </Button>
                               </td>
