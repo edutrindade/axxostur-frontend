@@ -6,10 +6,10 @@ import { Icon } from "@/components/ui/icon";
 import nexxusLogo from "@/assets/icons/n-logo.png";
 
 export const AppSidebar = () => {
-  const { logout } = useAuth();
+  const { logout, role } = useAuth();
   const navigate = useNavigate();
 
-  const menuItems = [
+  const superAdminItems = [
     {
       title: "Dashboard",
       icon: <Icon name="dashboard" size={18} />,
@@ -19,26 +19,8 @@ export const AppSidebar = () => {
     {
       title: "Empresas",
       icon: <Icon name="building" size={18} />,
-      path: "/companies",
-      key: "companies",
-    },
-    {
-      title: "Pacotes",
-      icon: <Icon name="map" size={18} />,
-      path: "/packages",
-      key: "packages",
-    },
-    {
-      title: "Viagens",
-      icon: <Icon name="calendar" size={18} />,
-      path: "/trips",
-      key: "trips",
-    },
-    {
-      title: "Vendas",
-      icon: <Icon name="dollar" size={18} />,
-      path: "/sales",
-      key: "sales",
+      path: "/enterprises",
+      key: "enterprises",
     },
     {
       title: "Configurações",
@@ -47,6 +29,69 @@ export const AppSidebar = () => {
       key: "settings",
     },
   ];
+
+  const adminItems = [
+    {
+      title: "Dashboard",
+      icon: <Icon name="dashboard" size={18} />,
+      path: "/",
+      key: "dashboard",
+    },
+    {
+      title: "Registrations",
+      icon: <Icon name="building" size={18} />,
+      path: "/registrations/customers",
+      key: "registrations",
+    },
+    {
+      title: "Packages & Trips",
+      icon: <Icon name="map" size={18} />,
+      path: "/packages-trips",
+      key: "packages-trips",
+    },
+    {
+      title: "POS",
+      icon: <Icon name="dollar" size={18} />,
+      path: "/pos",
+      key: "pos",
+    },
+    {
+      title: "Financial",
+      icon: <Icon name="chart" size={18} />,
+      path: "/financial",
+      key: "financial",
+    },
+    {
+      title: "Settings",
+      icon: <Icon name="settings" size={18} />,
+      path: "/settings",
+      key: "settings",
+    },
+  ];
+
+  const attendantItems = [
+    {
+      title: "Customers",
+      icon: <Icon name="users" size={18} />,
+      path: "/registrations/customers",
+      key: "customers",
+    },
+    {
+      title: "POS",
+      icon: <Icon name="dollar" size={18} />,
+      path: "/pos",
+      key: "pos",
+    },
+  ];
+
+  const getMenuItems = () => {
+    if (role === "super_admin") return superAdminItems;
+    if (role === "admin") return adminItems;
+    if (role === "attendant") return attendantItems;
+    return [];
+  };
+
+  const menuItems = getMenuItems();
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="border-r border-slate-300/60 bg-slate-900 shadow-lg">
