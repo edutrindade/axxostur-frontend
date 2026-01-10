@@ -17,7 +17,7 @@ const EnterprisesList = () => {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
   const handleCreate = (data: CreateCompanyRequest | UpdateCompanyRequest) => {
-    if (selectedCompany && "tradeName" in data) {
+    if (selectedCompany) {
       updateMutation.mutate(
         { id: selectedCompany.id, data: data as UpdateCompanyRequest },
         {
@@ -120,42 +120,54 @@ const EnterprisesList = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {companies.map((company) => (
-            <div key={company.id} className="bg-white rounded-lg border border-slate-200 p-6 hover:shadow-md transition-shadow">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-bold text-lg text-slate-900">{company.name}</h3>
-                  <p className="text-sm text-slate-600">{company.tradeName}</p>
-                </div>
+          {companies.map((company) => {
+            const colors = [company.primaryColor, company.secondaryColor, company.tertiaryColor].filter(Boolean);
 
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center text-slate-700">
-                    <span className="font-medium mr-2 w-20">CNPJ:</span>
-                    <span className="text-slate-600">{formatCnpj(company.cnpj)}</span>
+            return (
+              <div key={company.id} className="relative bg-white rounded-lg border border-slate-200 p-6 hover:shadow-md transition-shadow overflow-hidden">
+                {colors.length > 0 && (
+                  <div className="absolute top-0 right-0 flex gap-0">
+                    {colors.map((color, index) => (
+                      <div key={index} className="w-3 h-20" style={{ backgroundColor: color }} />
+                    ))}
                   </div>
-                  <div className="flex items-center text-slate-700">
-                    <span className="font-medium mr-2 w-20">Email:</span>
-                    <span className="text-slate-600">{company.email}</span>
-                  </div>
-                  <div className="flex items-center text-slate-700">
-                    <span className="font-medium mr-2 w-20">Telefone:</span>
-                    <span className="text-slate-600">{formatPhone(company.phone)}</span>
-                  </div>
-                </div>
+                )}
 
-                <div className="pt-4 border-t border-slate-200 flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => handleEdit(company)} className="flex-1">
-                    <Icon name="edit" size={16} className="mr-1" />
-                    Editar
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1">
-                    <Icon name="info" size={16} className="mr-1" />
-                    Ver Informações
-                  </Button>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-bold text-lg text-slate-900">{company.name}</h3>
+                    <p className="text-sm text-slate-600">{company.fantasyName}</p>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center text-slate-700">
+                      <span className="font-medium mr-2 w-20">CNPJ:</span>
+                      <span className="text-slate-600">{formatCnpj(company.cnpj)}</span>
+                    </div>
+                    <div className="flex items-center text-slate-700">
+                      <span className="font-medium mr-2 w-20">Email:</span>
+                      <span className="text-slate-600">{company.email}</span>
+                    </div>
+                    <div className="flex items-center text-slate-700">
+                      <span className="font-medium mr-2 w-20">Telefone:</span>
+                      <span className="text-slate-600">{formatPhone(company.phone)}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-200 flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(company)} className="flex-1">
+                      <Icon name="edit" size={16} className="mr-1" />
+                      Editar
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex-1">
+                      <Icon name="info" size={16} className="mr-1" />
+                      Ver Informações
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

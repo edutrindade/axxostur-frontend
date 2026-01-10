@@ -3,26 +3,48 @@ import { api } from "./api";
 export interface Company {
   id: string;
   name: string;
-  tradeName: string;
+  fantasyName?: string;
   cnpj: string;
+  responsible: string;
   email: string;
   phone: string;
+  cnae?: string;
+  taxRegime?: string;
+  logoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  tertiaryColor?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateCompanyRequest {
   name: string;
-  tradeName: string;
   cnpj: string;
+  responsible: string;
   email: string;
-  phone: string;
+  fantasyName?: string;
+  phone?: string;
+  cnae?: string;
+  taxRegime?: string;
+  logoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  tertiaryColor?: string;
 }
 
 export interface UpdateCompanyRequest {
-  tradeName?: string;
+  name?: string;
+  fantasyName?: string;
+  responsible?: string;
   email?: string;
   phone?: string;
+  cnae?: string;
+  taxRegime?: string;
+  logoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  tertiaryColor?: string;
 }
 
 export const listCompanies = async (): Promise<Company[]> => {
