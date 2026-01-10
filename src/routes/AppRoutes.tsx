@@ -11,10 +11,8 @@ const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Rotas públicas */}
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
 
-        {/* Rotas privadas */}
         <Route
           path="/"
           element={
@@ -26,7 +24,6 @@ const AppRoutes = () => {
           <Route index element={<Home />} />
         </Route>
 
-        {/* Rota de fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

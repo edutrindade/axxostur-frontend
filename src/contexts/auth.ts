@@ -6,13 +6,13 @@ export interface User {
   email: string;
   phone: string;
   cpf?: string;
-  role: "super_admin" | "admin" | "user";
+  role: "super_admin" | "admin" | "attendant";
   companyId?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export type Role = "super_admin" | "admin" | "user";
+export type Role = "super_admin" | "admin" | "attendant";
 
 export interface AuthContextType {
   user: User | null;

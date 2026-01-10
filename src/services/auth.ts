@@ -6,7 +6,7 @@ export interface User {
   email: string;
   phone: string;
   cpf?: string;
-  role: "super_admin" | "admin" | "user";
+  role: "super_admin" | "admin" | "attendant";
   companyId?: string;
   createdAt: string;
   updatedAt: string;
@@ -69,7 +69,7 @@ export const login = async (credentials: LoginRequest): Promise<AuthResponse> =>
   return response.data;
 };
 
-export const register = async (data: { name: string; email: string; password: string; phone: string; role: "super_admin" | "admin" | "user" }): Promise<AuthResponse> => {
+export const register = async (data: { name: string; email: string; password: string; phone: string; role: "super_admin" | "admin" | "attendant" }): Promise<AuthResponse> => {
   const response = await api.post<AuthResponse>("/auth/register", data);
   saveAuthData(response.data);
   return response.data;

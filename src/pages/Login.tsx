@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { useLoginMutation } from "@/hooks/useLoginMutation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -12,8 +12,7 @@ const Login = () => {
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { mutate: loginMutate, isPending: isLoading } = useLoginMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,28 +24,23 @@ const Login = () => {
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const success = await login(email, password);
-
-      if (success) {
-        toast.success("Login realizado com sucesso.", {
-          description: "Bem-vindo ao AxxosTur!",
-        });
-        navigate("/");
-      } else {
-        toast.error("Erro ao fazer login", {
-          description: "Verifique suas credenciais e tente novamente.",
-        });
+    loginMutate(
+      { email, password },
+      {
+        onSuccess: () => {
+          toast.success("Login realizado com sucesso.", {
+            description: "Bem-vindo ao AxxosTur!",
+          });
+          navigate("/");
+        },
+        onError: (error: any) => {
+          const errorMessage = error?.response?.data?.message || "Verifique suas credenciais e tente novamente.";
+          toast.error("Erro ao fazer login", {
+            description: errorMessage,
+          });
+        },
       }
-    } catch (error) {
-      toast.error("Erro ao fazer login", {
-        description: "Ocorreu um erro inesperado. Tente novamente.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
 
   return (
