@@ -1,0 +1,2838 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: NexxusTur
+meta:
+  id: wrk_9924985984df4caaa462fede75af582e
+  created: 1767923626503
+  modified: 1767923626503
+  description: ""
+collection:
+  - name: 01. Auth (Autenticação - Nova Implementação)
+    meta:
+      id: fld_9f7b5a397a2b49108e9b6ac53c8b6d57
+      created: 1735242000000
+      modified: 1735242000000
+      sortKey: -1735242000000
+      description: Sistema de autenticação com Bcrypt, JWT e segurança
+    children:
+      - url: "{{ _.baseURL }}auth/register"
+        name: 1. Register (Novo Usuário)
+        meta:
+          id: req_db73d672013141be9f961dcff7d9ec5e
+          created: 1735242000000
+          modified: 1767912034598
+          isPrivate: false
+          description: Criar novo usuário com senha criptografada
+          sortKey: -1735242000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "name": "Eduardo Trindade",
+              "email": "eduardoepalmeiras@gmail.com",
+              "password": "Eduardo#123",
+              "role": "super_admin",
+            	"phone": "38999705297"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/10.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}auth/login"
+        name: 2. Login (Autenticar)
+        meta:
+          id: req_275fae24b40f4263b0bafd396c6e2bd5
+          created: 1735242000100
+          modified: 1767915806825
+          isPrivate: false
+          description: Fazer login e obter tokens de acesso
+          sortKey: -1735241999900
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "email": "eduardoepalmeiras@gmail.com",
+              "password": "Eduardo#123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/10.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}auth/profile"
+        name: 3. Get Profile (Meu Perfil)
+        meta:
+          id: req_2ae883cd926644188fde07941e91c1ad
+          created: 1735242000200
+          modified: 1767916327830
+          isPrivate: false
+          description: Obter dados do usuário autenticado (protegido)
+          sortKey: -1735241999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          disabled: false
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}auth/profile"
+        name: 4. Update Profile (Atualizar Perfil)
+        meta:
+          id: req_2fcce57c573e465f918c497c026fae75
+          created: 1735242000300
+          modified: 1767916345902
+          isPrivate: false
+          description: Atualizar dados do usuário autenticado (protegido)
+          sortKey: -1735241999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "cpf": "09760477645"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}auth/change-password"
+        name: 5. Change Password (Alterar Senha)
+        meta:
+          id: req_5d2441e9c5a043b38d0273171ed01a73
+          created: 1735242000400
+          modified: 1767916824066
+          isPrivate: false
+          description: Alterar senha da conta (protegido)
+          sortKey: -1735241999600
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "currentPassword": "NovaSenha@456",
+              "newPassword": "Eduardo#123",
+              "confirmPassword": "Eduardo#123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}auth/refresh"
+        name: 6. Refresh Token (Renovar Token)
+        meta:
+          id: req_3ee32518ef1b4426a472d6ff43b45d7d
+          created: 1735242000500
+          modified: 1735242000500
+          isPrivate: false
+          description: Renovar token de acesso usando refresh token
+          sortKey: -1735241999500
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "refreshToken": "{{ _.refreshToken }}"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/10.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}auth/logout"
+        name: 7. Logout (Sair)
+        meta:
+          id: req_39519ebad1214874968f8568abd69537
+          created: 1735242000600
+          modified: 1735242000600
+          isPrivate: false
+          description: Fazer logout e finalizar sessão (protegido)
+          sortKey: -1735241999400
+        method: POST
+        body:
+          mimeType: application/json
+          text: "{}"
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 02. Companies (Gerenciamento de Empresas)
+    meta:
+      id: fld_a1c523c992ca4366aa8b24404d69d019
+      created: 1767920000000
+      modified: 1767920000000
+      sortKey: -1767920000000
+      description: CRUD de empresas - apenas super_admin
+    children:
+      - url: "{{ _.baseURL }}companies"
+        name: 1. Create Company (Criar Empresa)
+        meta:
+          id: req_405e63e2e54e4ae785ee44e3c88e01e9
+          created: 1767920000000
+          modified: 1767920000000
+          isPrivate: false
+          description: Criar nova empresa (super_admin)
+          sortKey: -1767920000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "name": "NexxusTur Viagens",
+              "tradeName": "NT",
+              "cnpj": "12.345.678/0001-90",
+              "email": "contato@nexxustur.com",
+              "phone": "+5511988776655"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}companies"
+        name: 2. List Companies (Listar Empresas)
+        meta:
+          id: req_f0a992f298b84575ae62cd79763398c6
+          created: 1767920000100
+          modified: 1767920000100
+          isPrivate: false
+          description: Listar todas as empresas (super_admin)
+          sortKey: -1767919999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}companies/{{ _.companyId }}"
+        name: 3. Get Company (Obter Empresa)
+        meta:
+          id: req_26d268dceeed496f995c504a0024100f
+          created: 1767920000200
+          modified: 1767920000200
+          isPrivate: false
+          description: Obter detalhes de uma empresa (super_admin)
+          sortKey: -1767919999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}companies/{{ _.companyId }}"
+        name: 4. Update Company (Atualizar Empresa)
+        meta:
+          id: req_f7540afbe60d4fe1969204cd8070da4d
+          created: 1767920000300
+          modified: 1767920000300
+          isPrivate: false
+          description: Atualizar dados de uma empresa (super_admin)
+          sortKey: -1767919999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "tradeName": "NT Viagens",
+              "email": "vendas@nexxustur.com",
+              "phone": "+5511988776666"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}companies/{{ _.companyId }}"
+        name: 5. Delete Company (Deletar Empresa)
+        meta:
+          id: req_15ffdd080aee478a8082752c5f78d344
+          created: 1767920000400
+          modified: 1767920000400
+          isPrivate: false
+          description: Deletar uma empresa (super_admin)
+          sortKey: -1767919999600
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 03. Addresses (Gerenciamento de Endereços)
+    meta:
+      id: fld_e4488c1727cb4e7c9a01770d77b4ce4f
+      created: 1767930000000
+      modified: 1767930000000
+      sortKey: -1767930000000
+      description: CRUD de endereços vinculados a empresas e clientes
+    children:
+      - url: "{{ _.baseURL }}addresses"
+        name: 1. Create Address (Criar Endereço)
+        meta:
+          id: req_cdc3cea367f146d3a8a219f7810040e1
+          created: 1767930000000
+          modified: 1767930000000
+          isPrivate: false
+          description: Criar novo endereço para empresa ou cliente
+          sortKey: -1767930000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "street": "Avenida Paulista",
+              "number": "1578",
+              "neighborhood": "Bela Vista",
+              "city": "São Paulo",
+              "state": "SP",
+              "zipCode": "01311-200",
+              "companyId": "{{ _.companyId }}"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}addresses/company/{{ _.companyId }}"
+        name: 2. List Addresses by Company
+        meta:
+          id: req_bc92a7ca89654ff795e405bc979541dc
+          created: 1767930000100
+          modified: 1767930000100
+          isPrivate: false
+          description: Listar endereços de uma empresa
+          sortKey: -1767929999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}addresses/{{ _.addressId }}"
+        name: 3. Get Address (Obter Endereço)
+        meta:
+          id: req_a641c336445345d8bcbaf990d4cf1764
+          created: 1767930000200
+          modified: 1767930000200
+          isPrivate: false
+          description: Obter detalhes de um endereço
+          sortKey: -1767929999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}addresses/{{ _.addressId }}"
+        name: 4. Update Address (Atualizar Endereço)
+        meta:
+          id: req_bc446df2c4f54595ad5c9ce09ae44244
+          created: 1767930000300
+          modified: 1767930000300
+          isPrivate: false
+          description: Atualizar dados de um endereço
+          sortKey: -1767929999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "number": "1600",
+              "complement": "Apto 1200"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}addresses/{{ _.addressId }}"
+        name: 5. Delete Address (Deletar Endereço)
+        meta:
+          id: req_d5001d65ba9f4a30beb4efb88d0264f4
+          created: 1767930000400
+          modified: 1767930000400
+          isPrivate: false
+          description: Deletar um endereço
+          sortKey: -1767929999600
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 04. Users (Gerenciamento de Usuários)
+    meta:
+      id: fld_4d8e818cd4424e40950d434c5bf570a3
+      created: 1767940000000
+      modified: 1767940000000
+      sortKey: -1767940000000
+      description: CRUD de usuários da plataforma (super_admin/admin)
+    children:
+      - url: "{{ _.baseURL }}users"
+        name: 1. Create User (Criar Usuário)
+        meta:
+          id: req_37a7b64e54264606aaef7cac7594decc
+          created: 1767940000000
+          modified: 1767920905354
+          isPrivate: false
+          description: Criar novo usuário da plataforma
+          sortKey: -1767940000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "name": "Maria Silva",
+              "email": "maria@nexxustur.com",
+              "password": "Senha#123",
+              "role": "admin",
+              "companyId": "{{ _.companyId }}",
+              "phone": "11988776655"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}users"
+        name: 2. List Users (Listar Usuários)
+        meta:
+          id: req_2a1339268eba4e2e8eaac9ebc52ac504
+          created: 1767940000100
+          modified: 1767940000100
+          isPrivate: false
+          description: Listar todos os usuários
+          sortKey: -1767939999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}users/company/{{ _.companyId }}"
+        name: 3. List Users by Company
+        meta:
+          id: req_8bf8869798ad4643862e8e2cd8f948b9
+          created: 1767940000150
+          modified: 1767940000150
+          isPrivate: false
+          description: Listar usuários de uma empresa específica
+          sortKey: -1767939999850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}users/{{ _.userId }}"
+        name: 4. Get User (Obter Usuário)
+        meta:
+          id: req_012da289b2254b409157f69bd71f4308
+          created: 1767940000200
+          modified: 1767940000200
+          isPrivate: false
+          description: Obter detalhes de um usuário
+          sortKey: -1767939999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}users/{{ _.userId }}"
+        name: 5. Update User (Atualizar Usuário)
+        meta:
+          id: req_15e5fdfead0e489892ebaaafa35d912d
+          created: 1767940000300
+          modified: 1767940000300
+          isPrivate: false
+          description: Atualizar dados de um usuário
+          sortKey: -1767939999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "name": "Maria Silva Santos",
+              "phone": "+5511988776666",
+              "active": true
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}users/{{ _.userId }}"
+        name: 6. Delete User (Deletar Usuário)
+        meta:
+          id: req_1b52a9e70f564cf8b05f1319bb44aa52
+          created: 1767940000400
+          modified: 1767940000400
+          isPrivate: false
+          description: Deletar um usuário
+          sortKey: -1767939999600
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 05. Clients (Gerenciamento de Clientes)
+    meta:
+      id: fld_f1fd8cfe41b84259a322c33d12e88858
+      created: 1767950000000
+      modified: 1767950000000
+      sortKey: -1767950000000
+      description: CRUD de clientes vinculados a empresas
+    children:
+      - url: "{{ _.baseURL }}clients"
+        name: 1. Create Client (Criar Cliente)
+        meta:
+          id: req_90507d7867a84b63be7bb3e65c0ff569
+          created: 1767950000000
+          modified: 1767920997980
+          isPrivate: false
+          description: Criar novo cliente
+          sortKey: -1767950000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "name": "João Santos",
+              "companyId": "{{ _.companyId }}",
+              "email": "joao.santos@email.com",
+              "phone": "38998765432",
+              "cpf": "12345678901",
+              "document": "MG123456789",
+              "birthDate": "1985-05-15",
+              "gender": "male",
+              "notes": "Cliente VIP"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}clients"
+        name: 2. List Clients (Listar Clientes)
+        meta:
+          id: req_d891d134e81547e18d8ef0884ca9ea03
+          created: 1767950000100
+          modified: 1767950000100
+          isPrivate: false
+          description: Listar todos os clientes
+          sortKey: -1767949999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}clients/company/{{ _.companyId }}"
+        name: 3. List Clients by Company
+        meta:
+          id: req_6e18c6022e514bee938667db7dd8bf9d
+          created: 1767950000150
+          modified: 1767950000150
+          isPrivate: false
+          description: Listar clientes de uma empresa
+          sortKey: -1767949999850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}clients/{{ _.clientId }}"
+        name: 4. Get Client (Obter Cliente)
+        meta:
+          id: req_2f989b35524644a0bead280464ded432
+          created: 1767950000200
+          modified: 1767950000200
+          isPrivate: false
+          description: Obter detalhes de um cliente
+          sortKey: -1767949999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}clients/{{ _.clientId }}"
+        name: 5. Update Client (Atualizar Cliente)
+        meta:
+          id: req_eb4a6003f63e4153a8d89ab0248a300c
+          created: 1767950000300
+          modified: 1767921631073
+          isPrivate: false
+          description: Atualizar dados de um cliente
+          sortKey: -1767949999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "notes": "Cliente Premium"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}clients/{{ _.clientId }}"
+        name: 6. Delete Client (Deletar Cliente)
+        meta:
+          id: req_107f81cff8014dcd98fb7952102708eb
+          created: 1767950000400
+          modified: 1767950000400
+          isPrivate: false
+          description: Deletar um cliente
+          sortKey: -1767949999600
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 06. Travelers (Gerenciamento de Viajantes)
+    meta:
+      id: fld_ea66920e82e94203b76a2efa874db58b
+      created: 1767960000000
+      modified: 1767960000000
+      sortKey: -1767960000000
+      description: CRUD de viajantes vinculados a empresas
+    children:
+      - url: "{{ _.baseURL }}travelers"
+        name: 1. Create Traveler (Criar Viajante)
+        meta:
+          id: req_0d4853ecd1ff431aa2cecf7a3675685e
+          created: 1767960000000
+          modified: 1767923903543
+          isPrivate: false
+          description: Criar novo viajante
+          sortKey: -1767960000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "name": "Pedro Mochileiro",
+              "companyId": "{{ _.companyId }}",
+              "email": "pedro.mochileiro@email.com",
+              "phone": "21987654321",
+              "cpf": "98765432101",
+              "document": "RJ987654321",
+              "birthDate": "1990-08-20",
+              "gender": "male"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}travelers"
+        name: 2. List Travelers (Listar Viajantes)
+        meta:
+          id: req_23105854e39749f6af4d477fc20983a1
+          created: 1767960000100
+          modified: 1767960000100
+          isPrivate: false
+          description: Listar todos os viajantes
+          sortKey: -1767959999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}travelers/company/{{ _.companyId }}"
+        name: 3. List Travelers by Company
+        meta:
+          id: req_5f0b9c4ec9a44749b01d3d23c8e6a9bc
+          created: 1767960000150
+          modified: 1767960000150
+          isPrivate: false
+          description: Listar viajantes de uma empresa
+          sortKey: -1767959999850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}travelers/{{ _.travelerId }}"
+        name: 4. Get Traveler (Obter Viajante)
+        meta:
+          id: req_132b62a8429f4d7cbef72e9a929eecd5
+          created: 1767960000200
+          modified: 1767960000200
+          isPrivate: false
+          description: Obter detalhes de um viajante
+          sortKey: -1767959999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}travelers/{{ _.travelerId }}"
+        name: 5. Update Traveler (Atualizar Viajante)
+        meta:
+          id: req_f40db85bbf0b4d7f8fae9000e881fa73
+          created: 1767960000300
+          modified: 1767960000300
+          isPrivate: false
+          description: Atualizar dados de um viajante
+          sortKey: -1767959999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "email": "maria.silva.novo@email.com",
+              "phone": "+5511988888888",
+              "notes": "Atualizado em janeiro"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 07. Buses (Gerenciamento de Ônibus)
+    meta:
+      id: fld_32103b4182f14aac997c479490345220
+      created: 1767970000000
+      modified: 1767970000000
+      sortKey: -1767970000000
+      description: CRUD de ônibus vinculados a empresas
+    children:
+      - url: "{{ _.baseURL }}buses"
+        name: 1. Create Bus (Criar Ônibus)
+        meta:
+          id: req_4c4af3f2798b47a189481cec67cb94c8
+          created: 1767970000000
+          modified: 1767922822193
+          isPrivate: false
+          description: Criar novo ônibus
+          sortKey: -1767970000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "companyId": "{{ _.companyId }}",
+              "name": "Marcopolo Andare",
+              "plate": "ABC1234",
+              "totalSeats": 45
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}buses"
+        name: 2. List Buses (Listar Ônibus)
+        meta:
+          id: req_4fd7d114dc254dfd8aab7023e5b14360
+          created: 1767970000100
+          modified: 1767970000100
+          isPrivate: false
+          description: Listar todos os ônibus
+          sortKey: -1767969999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}buses/company/{{ _.companyId }}"
+        name: 3. List Buses by Company
+        meta:
+          id: req_96d97afb354d458a9f690a5fcb53d1ef
+          created: 1767970000150
+          modified: 1767970000150
+          isPrivate: false
+          description: Listar ônibus de uma empresa
+          sortKey: -1767969999850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}buses/{{ _.busId }}"
+        name: 4. Get Bus (Obter Ônibus)
+        meta:
+          id: req_1265713af6a541f5a9b4dc6d2549eaa0
+          created: 1767970000200
+          modified: 1767970000200
+          isPrivate: false
+          description: Obter detalhes de um ônibus
+          sortKey: -1767969999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}buses/{{ _.busId }}"
+        name: 5. Update Bus (Atualizar Ônibus)
+        meta:
+          id: req_5db22b6c3d38400ba11c9df66a1c784f
+          created: 1767970000300
+          modified: 1767922872877
+          isPrivate: false
+          description: Atualizar dados de um ônibus
+          sortKey: -1767969999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "notes": "Revisão realizada em janeiro"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}buses/{{ _.busId }}"
+        name: 6. Delete Bus (Deletar Ônibus)
+        meta:
+          id: req_8465c44ba48b408a8f1000f63d54c2ab
+          created: 1767970000400
+          modified: 1767970000400
+          isPrivate: false
+          description: Deletar um ônibus
+          sortKey: -1767969999600
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 08. Hotels (Gerenciamento de Hotéis)
+    meta:
+      id: fld_e4264adf638d422786e5e58fbb87f556
+      created: 1767980000000
+      modified: 1767980000000
+      sortKey: -1767980000000
+      description: CRUD de hotéis vinculados a empresas
+    children:
+      - url: "{{ _.baseURL }}hotels"
+        name: 1. Create Hotel (Criar Hotel)
+        meta:
+          id: req_9b247816d24c4b56b582a8c3a99de068
+          created: 1767980000000
+          modified: 1767980000000
+          isPrivate: false
+          description: Criar novo hotel
+          sortKey: -1767980000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "companyId": "{{ _.companyId }}",
+              "name": "Hotel Paraíso",
+              "email": "contato@hotelparaiso.com",
+              "phone": "+5511998765432",
+              "city": "Caldas Novas",
+              "state": "GO",
+              "rating": 4.5,
+              "notes": "Com piscina aquecida"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}hotels"
+        name: 2. List Hotels (Listar Hotéis)
+        meta:
+          id: req_dbcac8c1bc9e4253b25859ca6ea35f80
+          created: 1767980000100
+          modified: 1767980000100
+          isPrivate: false
+          description: Listar todos os hotéis
+          sortKey: -1767979999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}hotels/company/{{ _.companyId }}"
+        name: 3. List Hotels by Company
+        meta:
+          id: req_5e5935ec3211442888199299329ebff6
+          created: 1767980000150
+          modified: 1767980000150
+          isPrivate: false
+          description: Listar hotéis de uma empresa
+          sortKey: -1767979999850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}hotels/{{ _.hotelId }}"
+        name: 4. Get Hotel (Obter Hotel)
+        meta:
+          id: req_0b488a76aa814f148ec6da20f6b6ccf3
+          created: 1767980000200
+          modified: 1767980000200
+          isPrivate: false
+          description: Obter detalhes de um hotel
+          sortKey: -1767979999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}hotels/{{ _.hotelId }}"
+        name: 5. Update Hotel (Atualizar Hotel)
+        meta:
+          id: req_ece301dfa14f455ca62c5c8efa2bde03
+          created: 1767980000300
+          modified: 1767923068023
+          isPrivate: false
+          description: Atualizar dados de um hotel
+          sortKey: -1767979999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "description": "Hotel 4 estrelas"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}hotels/{{ _.hotelId }}"
+        name: 6. Delete Hotel (Deletar Hotel)
+        meta:
+          id: req_b43eedd6a374461e9193f6ee038a67c0
+          created: 1767980000400
+          modified: 1767980000400
+          isPrivate: false
+          description: Deletar um hotel
+          sortKey: -1767979999600
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 09. Packages (Gerenciamento de Pacotes)
+    meta:
+      id: fld_2604c41e8a5a46d6864b6a5d3b6537bf
+      created: 1767990000000
+      modified: 1767990000000
+      sortKey: -1767990000000
+      description: CRUD de pacotes de viagem vinculados a empresas
+    children:
+      - url: "{{ _.baseURL }}packages"
+        name: 1. Create Package (Criar Pacote)
+        meta:
+          id: req_a791339e09c348688fe9b3a7fe98ba96
+          created: 1767990000000
+          modified: 1767923129461
+          isPrivate: false
+          description: Criar novo pacote de viagem
+          sortKey: -1767990000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "companyId": "{{ _.companyId }}",
+            	"hotelId": "{{ _.hotelId }}",
+              "name": "Semana em Caldas Novas",
+              "description": "Pacote completo com hotel 4 estrelas",
+            	"nights": 3
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}packages"
+        name: 2. List Packages (Listar Pacotes)
+        meta:
+          id: req_200cdb2335f54ab0b1b895b6f27a1f59
+          created: 1767990000100
+          modified: 1767990000100
+          isPrivate: false
+          description: Listar todos os pacotes
+          sortKey: -1767989999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}packages/company/{{ _.companyId }}"
+        name: 3. List Packages by Company
+        meta:
+          id: req_cb530a50b55a42c489657a8075240ac1
+          created: 1767990000150
+          modified: 1767990000150
+          isPrivate: false
+          description: Listar pacotes de uma empresa
+          sortKey: -1767989999850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}packages/{{ _.packageId }}"
+        name: 4. Get Package (Obter Pacote)
+        meta:
+          id: req_0bb1d5c1ec424c3d8a2821dc51a82cce
+          created: 1767990000200
+          modified: 1767990000200
+          isPrivate: false
+          description: Obter detalhes de um pacote
+          sortKey: -1767989999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}packages/{{ _.packageId }}"
+        name: 5. Update Package (Atualizar Pacote)
+        meta:
+          id: req_843c024526694797b54d535b784b10f9
+          created: 1767990000300
+          modified: 1767990000300
+          isPrivate: false
+          description: Atualizar dados de um pacote
+          sortKey: -1767989999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "price": 1600.00,
+              "maxPeople": 50,
+              "notes": "Inclui transfers e passeios"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}packages/{{ _.packageId }}"
+        name: 6. Delete Package (Deletar Pacote)
+        meta:
+          id: req_7f402ad19fe1459c9701c75409fcf04e
+          created: 1767990000400
+          modified: 1767990000400
+          isPrivate: false
+          description: Deletar um pacote
+          sortKey: -1767989999600
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 10. Package-Trips (Viagens - Pacotes com Datas)
+    meta:
+      id: fld_116711b22b944fa584b5b247ce0cad67
+      created: 1768000000000
+      modified: 1768000000000
+      sortKey: -1768000000000
+      description: Endpoints para gerenciar viagens relacionadas a pacotes
+    children:
+      - url: "{{ _.baseURL }}package-trips"
+        name: 1. Create Package-Trip (Criar Viagem)
+        meta:
+          id: req_89509ea91bfb4aac9ec2c1eeda3889f8
+          created: 1768000000000
+          modified: 1767923670570
+          isPrivate: false
+          description: Criar uma nova viagem para um pacote
+          sortKey: -1768000000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "companyId": "{{ _.companyId }}",
+              "packageId": "{{ _.packageId }}",
+              "busId": "{{ _.busId }}",
+              "departureDate": "2026-02-15",
+              "returnDate": "2026-02-19",
+              "price": 1500.00
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}package-trips"
+        name: 2. List Package-Trips (Listar Viagens)
+        meta:
+          id: req_074695c906c9405abdde68260a83c0b7
+          created: 1768000000100
+          modified: 1768000000100
+          isPrivate: false
+          description: Listar todas as viagens
+          sortKey: -1767999999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}package-trips/company/{{ _.companyId }}"
+        name: 3. List Package-Trips by Company
+        meta:
+          id: req_2e443e66a04b400ca1c566181b78aa34
+          created: 1768000000150
+          modified: 1768000000150
+          isPrivate: false
+          description: Listar viagens de uma empresa
+          sortKey: -1767999999850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}package-trips/{{ _.packageTripId }}"
+        name: 4. Get Package-Trip (Obter Viagem)
+        meta:
+          id: req_80ffbd65ec99492c9ce684b93333eec3
+          created: 1768000000200
+          modified: 1768000000200
+          isPrivate: false
+          description: Obter detalhes de uma viagem
+          sortKey: -1767999999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}package-trips/{{ _.packageTripId }}"
+        name: 5. Update Package-Trip (Atualizar Viagem)
+        meta:
+          id: req_6d79cb710a2b49feb0193122ee1530d7
+          created: 1768000000300
+          modified: 1767923758888
+          isPrivate: false
+          description: Atualizar dados de uma viagem
+          sortKey: -1767999999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "reservedSeats": 2
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}package-trips/{{ _.packageTripId }}"
+        name: 6. Delete Package-Trip (Deletar Viagem)
+        meta:
+          id: req_fed5274efae141809b4cabf6963be600
+          created: 1768000000400
+          modified: 1768000000400
+          isPrivate: false
+          description: Deletar uma viagem
+          sortKey: -1767999999600
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 11. Sales (Vendas)
+    meta:
+      id: fld_0229f14c27a44d5ba2436d1ec93f9602
+      created: 1768010000000
+      modified: 1768010000000
+      sortKey: -1768010000000
+      description: Endpoints para gerenciar vendas de pacotes
+    children:
+      - url: "{{ _.baseURL }}sales"
+        name: 1. Create Sale (Criar Venda)
+        meta:
+          id: req_d87ce005bb8443208d15ab8f71b274cc
+          created: 1768010000000
+          modified: 1767923815157
+          isPrivate: false
+          description: Criar uma nova venda
+          sortKey: -1768010000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "companyId": "{{ _.companyId }}",
+              "clientId": "{{ _.clientId }}",
+              "userId": "{{ _.userId }}",
+              "packageTripId": "{{ _.packageTripId }}",
+              "totalValue": 1500.00,
+              "status": "reserved"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}sales"
+        name: 2. List Sales (Listar Vendas)
+        meta:
+          id: req_a85a87bf3430440c812a22108a584e2c
+          created: 1768010000100
+          modified: 1768010000100
+          isPrivate: false
+          description: Listar todas as vendas
+          sortKey: -1768009999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}sales/company/{{ _.companyId }}"
+        name: 3. List Sales by Company
+        meta:
+          id: req_e61baf27d9f149db9081700cc0498c88
+          created: 1768010000150
+          modified: 1768010000150
+          isPrivate: false
+          description: Listar vendas de uma empresa
+          sortKey: -1768009999850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}sales/{{ _.saleId }}"
+        name: 4. Get Sale (Obter Venda)
+        meta:
+          id: req_44872a74a386402ba2a2c23ce94aa469
+          created: 1768010000200
+          modified: 1768010000200
+          isPrivate: false
+          description: Obter detalhes de uma venda
+          sortKey: -1768009999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}sales/{{ _.saleId }}"
+        name: 5. Update Sale (Atualizar Venda)
+        meta:
+          id: req_333a2508df59485989f854a169282a8a
+          created: 1768010000300
+          modified: 1768010000300
+          isPrivate: false
+          description: Atualizar dados de uma venda
+          sortKey: -1768009999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "status": "CONFIRMED",
+              "totalValue": 1500.00
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}sales/{{ _.saleId }}"
+        name: 6. Delete Sale (Deletar Venda)
+        meta:
+          id: req_078c42ead805484ebd2cfe49824fb369
+          created: 1768010000400
+          modified: 1768010000400
+          isPrivate: false
+          description: Deletar uma venda
+          sortKey: -1768009999600
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 12. Sale-Travelers (Viajantes da Venda)
+    meta:
+      id: fld_1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b
+      created: 1768020000000
+      modified: 1768020000000
+      sortKey: -1768020000000
+      description: Endpoints para gerenciar viajantes vinculados à venda
+    children:
+      - url: "{{ _.baseURL }}sale-travelers"
+        name: 1. Create Sale-Traveler (Adicionar Viajante)
+        meta:
+          id: req_5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c
+          created: 1768020000000
+          modified: 1768020000000
+          isPrivate: false
+          description: Adicionar um viajante à venda
+          sortKey: -1768020000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "saleId": "{{ _.saleId }}",
+              "travelerId": "{{ _.travelerId }}",
+              "seatNumber": 5
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}sale-travelers"
+        name: 2. List Sale-Travelers (Listar Viajantes)
+        meta:
+          id: req_6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d
+          created: 1768020000100
+          modified: 1768020000100
+          isPrivate: false
+          description: Listar todos os viajantes das vendas
+          sortKey: -1768019999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}sale-travelers/sale/{{ _.saleId }}"
+        name: 3. List by Sale (Viajantes da Venda)
+        meta:
+          id: req_7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e
+          created: 1768020000150
+          modified: 1768020000150
+          isPrivate: false
+          description: Listar viajantes de uma venda específica
+          sortKey: -1768019999850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}sale-travelers/{{ _.saleTravelerId }}"
+        name: 4. Get Sale-Traveler (Obter Viajante)
+        meta:
+          id: req_8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f
+          created: 1768020000200
+          modified: 1768020000200
+          isPrivate: false
+          description: Obter detalhes de um viajante da venda
+          sortKey: -1768019999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}sale-travelers/{{ _.saleTravelerId }}"
+        name: 5. Update Sale-Traveler (Atualizar Viajante)
+        meta:
+          id: req_9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a
+          created: 1768020000300
+          modified: 1768020000300
+          isPrivate: false
+          description: Atualizar dados do viajante (como número do assento)
+          sortKey: -1768019999700
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "seatNumber": 10
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}sale-travelers/{{ _.saleTravelerId }}"
+        name: 6. Delete Sale-Traveler (Deletar Viajante)
+        meta:
+          id: req_0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b
+          created: 1768020000400
+          modified: 1768020000400
+          isPrivate: false
+          description: Remover um viajante da venda
+          sortKey: -1768019999600
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 13. Cash Flows (Fluxo de Caixa)
+    meta:
+      id: fld_2f3g4h5i6j7k8l9m0n1o2p3q4r5s6t7u
+      created: 1768020500000
+      modified: 1768020500000
+      sortKey: -1768020500000
+      description: Endpoints para gerenciar fluxo de caixa e projeções
+    children:
+      - url: "{{ _.baseURL }}cash-flows"
+        name: 1. List All Cash Flows (Listar Fluxos)
+        meta:
+          id: req_3g4h5i6j7k8l9m0n1o2p3q4r5s6t7u8v
+          created: 1768020500000
+          modified: 1768020500000
+          isPrivate: false
+          description: Listar todos os fluxos de caixa com filtros opcionais
+          sortKey: -1768020500000
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}cash-flows/company/{{ _.companyId }}"
+        name: 2. List by Company (Por Empresa)
+        meta:
+          id: req_4h5i6j7k8l9m0n1o2p3q4r5s6t7u8v9w
+          created: 1768020500100
+          modified: 1768020500100
+          isPrivate: false
+          description: Listar fluxos de caixa de uma empresa específica
+          sortKey: -1768020499900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}cash-flows/company/{{ _.companyId }}/summary?startDate=2026-01-01&endDate=2026-01-31"
+        name: 3. Get Summary (Resumo do Período)
+        meta:
+          id: req_5i6j7k8l9m0n1o2p3q4r5s6t7u8v9w0x
+          created: 1768020500150
+          modified: 1768020500150
+          isPrivate: false
+          description: Obter resumo de fluxo (total in/out/balance) por período
+          sortKey: -1768020499850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}cash-flows/company/{{ _.companyId }}/balance"
+        name: 4. Get Balance (Saldo Atual)
+        meta:
+          id: req_6j7k8l9m0n1o2p3q4r5s6t7u8v9w0x1y
+          created: 1768020500200
+          modified: 1768020500200
+          isPrivate: false
+          description: Obter saldo atual de caixa
+          sortKey: -1768020499800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}cash-flows/company/{{ _.companyId }}/forecast?days=30"
+        name: 5. Get Forecast (Projeção 30 Dias)
+        meta:
+          id: req_7k8l9m0n1o2p3q4r5s6t7u8v9w0x1y2z
+          created: 1768020500300
+          modified: 1768020500300
+          isPrivate: false
+          description: Obter projeção de fluxo de caixa (próximos 30 dias)
+          sortKey: -1768020499700
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}cash-flows/company/{{ _.companyId }}/origin/receivable"
+        name: 6. Get by Origin (Por Origem)
+        meta:
+          id: req_8l9m0n1o2p3q4r5s6t7u8v9w0x1y2z3a
+          created: 1768020500400
+          modified: 1768020500400
+          isPrivate: false
+          description: Listar fluxos por origem (receivable, payable, etc)
+          sortKey: -1768020499600
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}cash-flows/company/{{ _.companyId }}/type/in"
+        name: 7. Get by Type (Por Tipo)
+        meta:
+          id: req_9m0n1o2p3q4r5s6t7u8v9w0x1y2z3a4b
+          created: 1768020500500
+          modified: 1768020500500
+          isPrivate: false
+          description: Listar fluxos por tipo (in/out)
+          sortKey: -1768020499500
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}cash-flows/{{ _.cashFlowId }}"
+        name: 8. Get Cash Flow (Detalhes)
+        meta:
+          id: req_0n1o2p3q4r5s6t7u8v9w0x1y2z3a4b5c
+          created: 1768020500600
+          modified: 1768020500600
+          isPrivate: false
+          description: Obter detalhes de um fluxo de caixa específico
+          sortKey: -1768020499400
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 14. Receivables (Contas a Receber)
+    meta:
+      id: fld_3g4h5i6j7k8l9m0n1o2p3q4r5s6t7u8v
+      created: 1768021000000
+      modified: 1768021000000
+      sortKey: -1768021000000
+      description: Endpoints para gerenciar contas a receber
+    children:
+      - url: "{{ _.baseURL }}receivables"
+        name: 1. Create Receivable (Criar Conta)
+        meta:
+          id: req_4g5h6i7j8k9l0m1n2o3p4q5r6s7t8u9v
+          created: 1768021000000
+          modified: 1768021000000
+          isPrivate: false
+          description: Criar uma nova conta a receber
+          sortKey: -1768021000000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "companyId": "{{ _.companyId }}",
+              "saleId": "{{ _.saleId }}",
+              "dueDate": "2026-02-09",
+              "value": 1500.00,
+              "paymentMethod": "pix"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}receivables"
+        name: 2. List All Receivables (Listar Contas)
+        meta:
+          id: req_5h6i7j8k9l0m1n2o3p4q5r6s7t8u9v0w
+          created: 1768021000100
+          modified: 1768021000100
+          isPrivate: false
+          description: Listar todas as contas a receber
+          sortKey: -1768020999900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}receivables/company/{{ _.companyId }}"
+        name: 3. List by Company (Por Empresa)
+        meta:
+          id: req_6i7j8k9l0m1n2o3p4q5r6s7t8u9v0w1x
+          created: 1768021000150
+          modified: 1768021000150
+          isPrivate: false
+          description: Listar contas a receber de uma empresa
+          sortKey: -1768020999850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}receivables/company/{{ _.companyId }}/summary"
+        name: 4. Get Summary (Resumo)
+        meta:
+          id: req_7j8k9l0m1n2o3p4q5r6s7t8u9v0w1x2y
+          created: 1768021000200
+          modified: 1768021000200
+          isPrivate: false
+          description: Obter resumo de contas a receber
+          sortKey: -1768020999800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}receivables/company/{{ _.companyId }}/overdue"
+        name: 5. Get Overdue (Vencidas)
+        meta:
+          id: req_8k9l0m1n2o3p4q5r6s7t8u9v0w1x2y3z
+          created: 1768021000300
+          modified: 1768021000300
+          isPrivate: false
+          description: Obter contas vencidas
+          sortKey: -1768020999700
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}receivables/company/{{ _.companyId }}/range?startDate=2026-01-01&endDate=2026-01-31"
+        name: 6. Get by Date Range (Por Período)
+        meta:
+          id: req_9l0m1n2o3p4q5r6s7t8u9v0w1x2y3z4a
+          created: 1768021000400
+          modified: 1768021000400
+          isPrivate: false
+          description: Obter contas por período de datas
+          sortKey: -1768020999600
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}receivables/sale/{{ _.saleId }}"
+        name: 7. Get by Sale (Por Venda)
+        meta:
+          id: req_0m1n2o3p4q5r6s7t8u9v0w1x2y3z4a5b
+          created: 1768021000500
+          modified: 1768021000500
+          isPrivate: false
+          description: Obter contas de uma venda específica
+          sortKey: -1768020999500
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}receivables/{{ _.receivableId }}"
+        name: 8. Get Receivable (Detalhes)
+        meta:
+          id: req_1n2o3p4q5r6s7t8u9v0w1x2y3z4a5b6c
+          created: 1768021000600
+          modified: 1768021000600
+          isPrivate: false
+          description: Obter detalhes de uma conta a receber
+          sortKey: -1768020999400
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}receivables/{{ _.receivableId }}"
+        name: 9. Update Receivable (Atualizar)
+        meta:
+          id: req_2o3p4q5r6s7t8u9v0w1x2y3z4a5b6c7d
+          created: 1768021000700
+          modified: 1768021000700
+          isPrivate: false
+          description: Atualizar dados da conta a receber
+          sortKey: -1768020999300
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "discount": 50.00,
+              "discountReason": "Desconto comercial"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}receivables/{{ _.receivableId }}/pay"
+        name: 10. Mark as Paid (Marcar como Paga)
+        meta:
+          id: req_3p4q5r6s7t8u9v0w1x2y3z4a5b6c7d8e
+          created: 1768021000800
+          modified: 1768021000800
+          isPrivate: false
+          description: Marcar conta como paga
+          sortKey: -1768020999200
+        method: PATCH
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}receivables/{{ _.receivableId }}"
+        name: 11. Delete Receivable (Deletar)
+        meta:
+          id: req_4q5r6s7t8u9v0w1x2y3z4a5b6c7d8e9f
+          created: 1768021000900
+          modified: 1768021000900
+          isPrivate: false
+          description: Deletar uma conta a receber (soft-delete)
+          sortKey: -1768020999100
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: 15. Payables (Contas a Pagar)
+    meta:
+      id: fld_4h5i6j7k8l9m0n1o2p3q4r5s6t7u8v9w
+      created: 1768021500000
+      modified: 1768021500000
+      sortKey: -1768021500000
+      description: Endpoints para gerenciar contas a pagar
+    children:
+      - url: "{{ _.baseURL }}payables"
+        name: 1. Create Payable (Criar Conta)
+        meta:
+          id: req_5r6s7t8u9v0w1x2y3z4a5b6c7d8e9f0g
+          created: 1768021500000
+          modified: 1768021500000
+          isPrivate: false
+          description: Criar uma nova conta a pagar
+          sortKey: -1768021500000
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "companyId": "{{ _.companyId }}",
+              "description": "Combustível - Viagem",
+              "supplier": "Empresa Petróleo",
+              "dueDate": "2026-02-09",
+              "value": 2500.00,
+              "paymentMethod": "transfer"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}payables"
+        name: 2. List All Payables (Listar Contas)
+        meta:
+          id: req_6s7t8u9v0w1x2y3z4a5b6c7d8e9f0g1h
+          created: 1768021500100
+          modified: 1768021500100
+          isPrivate: false
+          description: Listar todas as contas a pagar
+          sortKey: -1768021499900
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}payables/company/{{ _.companyId }}"
+        name: 3. List by Company (Por Empresa)
+        meta:
+          id: req_7t8u9v0w1x2y3z4a5b6c7d8e9f0g1h2i
+          created: 1768021500150
+          modified: 1768021500150
+          isPrivate: false
+          description: Listar contas a pagar de uma empresa
+          sortKey: -1768021499850
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}payables/company/{{ _.companyId }}/summary"
+        name: 4. Get Summary (Resumo)
+        meta:
+          id: req_8u9v0w1x2y3z4a5b6c7d8e9f0g1h2i3j
+          created: 1768021500200
+          modified: 1768021500200
+          isPrivate: false
+          description: Obter resumo de contas a pagar
+          sortKey: -1768021499800
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}payables/company/{{ _.companyId }}/overdue"
+        name: 5. Get Overdue (Vencidas)
+        meta:
+          id: req_9v0w1x2y3z4a5b6c7d8e9f0g1h2i3j4k
+          created: 1768021500300
+          modified: 1768021500300
+          isPrivate: false
+          description: Obter contas vencidas
+          sortKey: -1768021499700
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}payables/company/{{ _.companyId }}/range?startDate=2026-01-01&endDate=2026-01-31"
+        name: 6. Get by Date Range (Por Período)
+        meta:
+          id: req_0w1x2y3z4a5b6c7d8e9f0g1h2i3j4k5l
+          created: 1768021500400
+          modified: 1768021500400
+          isPrivate: false
+          description: Obter contas por período de datas
+          sortKey: -1768021499600
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}payables/supplier/Empresa%20Petróleo?companyId={{ _.companyId }}"
+        name: 7. Get by Supplier (Por Fornecedor)
+        meta:
+          id: req_1x2y3z4a5b6c7d8e9f0g1h2i3j4k5l6m
+          created: 1768021500500
+          modified: 1768021500500
+          isPrivate: false
+          description: Obter contas de um fornecedor específico
+          sortKey: -1768021499500
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}payables/{{ _.payableId }}"
+        name: 8. Get Payable (Detalhes)
+        meta:
+          id: req_2y3z4a5b6c7d8e9f0g1h2i3j4k5l6m7n
+          created: 1768021500600
+          modified: 1768021500600
+          isPrivate: false
+          description: Obter detalhes de uma conta a pagar
+          sortKey: -1768021499400
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}payables/{{ _.payableId }}"
+        name: 9. Update Payable (Atualizar)
+        meta:
+          id: req_3z4a5b6c7d8e9f0g1h2i3j4k5l6m7n8o
+          created: 1768021500700
+          modified: 1768021500700
+          isPrivate: false
+          description: Atualizar dados da conta a pagar
+          sortKey: -1768021499300
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "discount": 100.00,
+              "discountReason": "Desconto por pagamento antecipado"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}payables/{{ _.payableId }}/pay"
+        name: 10. Mark as Paid (Marcar como Paga)
+        meta:
+          id: req_4a5b6c7d8e9f0g1h2i3j4k5l6m7n8o9p
+          created: 1768021500800
+          modified: 1768021500800
+          isPrivate: false
+          description: Marcar conta como paga
+          sortKey: -1768021499200
+        method: PATCH
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.baseURL }}payables/{{ _.payableId }}"
+        name: 11. Delete Payable (Deletar)
+        meta:
+          id: req_5b6c7d8e9f0g1h2i3j4k5l6m7n8o9p0q
+          created: 1768021500900
+          modified: 1768021500900
+          isPrivate: false
+          description: Deletar uma conta a pagar (soft-delete)
+          sortKey: -1768021499100
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/10.3.0
+        authentication:
+          type: bearer
+          token: "{{ _.accessToken }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_f677737b9516477cb78ef2e242c75d97
+    created: 1767904466674
+    modified: 1767904466674
+environments:
+  name: Development
+  meta:
+    id: env_59fa92f90724477bb3297f1ad6566a75
+    created: 1767904466667
+    modified: 1767923847206
+    isPrivate: false
+  data:
+    baseURL: http://localhost:3000/api/
+    accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3YmY4NGI5OC02ZTgwLTRkMDMtOWFmMy1jNjk3OGMyYzhlMWUiLCJlbWFpbCI6ImVkdWFyZG9lcGFsbWVpcmFzQGdtYWlsLmNvbSIsInJvbGUiOiJzdXBlcl9hZG1pbiIsImlhdCI6MTc2NzkxNjc2MCwiZXhwIjoxNzY4MDAzMTYwfQ.IIJypkuytpCH9yC8GWrxOjVzwXt05Ckso73vtg77GwQ
+    refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3YmY4NGI5OC02ZTgwLTRkMDMtOWFmMy1jNjk3OGMyYzhlMWUiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTc2NzkxNjc2MCwiZXhwIjoxNzY4NTIxNTYwfQ.LdhaJGmCAP1l68eB1WmLkUmT6YUmDgJQw0j1xDTD8FY
+    companyId: 9999d9e0-3a7a-4af6-85fb-3e2c88f7e2dd
+    addressId: address-uuid-here
+    userId: d0a81edc-e537-4bd5-842d-192d75105689
+    clientId: 59b169a9-6bfc-4b62-a7b3-8f916ccf1723
+    travelerId: traveler-uuid-here
+    busId: ae33f65a-24f4-40c1-99dd-e6530982fe21
+    hotelId: a1258954-a8c3-4838-8889-a66bcbef58a4
+    packageId: c372cf00-b867-4982-8039-f48363c1d5da
+    packageTripId: faff8e2f-11df-4ff6-b888-c8438728d3d3
+    saleId: sale-uuid-here
+    saleTravelerId: sale-traveler-uuid-here

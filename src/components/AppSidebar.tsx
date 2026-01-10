@@ -5,15 +5,11 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import { Icon } from "@/components/ui/icon";
 import nexxusLogo from "@/assets/icons/n-logo.png";
 
-interface AppSidebarProps {
-  activeItem?: string;
-}
-
-export const AppSidebar = ({ activeItem }: AppSidebarProps) => {
-  const { logout, isSuperAdmin } = useAuth();
+export const AppSidebar = () => {
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const adminMenuItems = [
+  const menuItems = [
     {
       title: "Dashboard",
       icon: <Icon name="dashboard" size={18} />,
@@ -21,66 +17,36 @@ export const AppSidebar = ({ activeItem }: AppSidebarProps) => {
       key: "dashboard",
     },
     {
-      title: "Aprovações Pendentes",
-      icon: <Icon name="clock" size={18} />,
-      path: "/pre-approvals",
-      key: "pre-approvals",
-      showOnlyForSuperAdmin: true,
-    },
-    {
-      title: "Usuários",
-      icon: <Icon name="users" size={18} />,
-      path: "/users",
-      key: "users",
-      showOnlyForSuperAdmin: true,
-    },
-    {
-      title: "Clientes",
+      title: "Empresas",
       icon: <Icon name="building" size={18} />,
-      path: "/clients",
-      key: "clients",
-      showOnlyForSuperAdmin: true,
+      path: "/companies",
+      key: "companies",
     },
-    // Cadastros Fiscais - visível para todos os usuários
     {
-      title: "Cadastros Fiscais",
-      icon: <Icon name="receipt" size={18} />,
-      path: "/tax",
-      key: "tax",
-      showOnlyForSuperAdmin: false,
+      title: "Pacotes",
+      icon: <Icon name="map" size={18} />,
+      path: "/packages",
+      key: "packages",
+    },
+    {
+      title: "Viagens",
+      icon: <Icon name="calendar" size={18} />,
+      path: "/trips",
+      key: "trips",
+    },
+    {
+      title: "Vendas",
+      icon: <Icon name="dollar" size={18} />,
+      path: "/sales",
+      key: "sales",
     },
     {
       title: "Configurações",
       icon: <Icon name="settings" size={18} />,
       path: "/settings",
       key: "settings",
-      showOnlyForSuperAdmin: true,
-    },
-    // {
-    //   title: "Relatórios",
-    //   icon: <Icon name="reports" size={18} />,
-    //   path: "/reports",
-    //   key: "reports",
-    //   showOnlyForSuperAdmin: true,
-    // },
-  ];
-
-  const userMenuItems = [
-    {
-      title: "Dashboard",
-      icon: <Icon name="dashboard" size={18} />,
-      path: "/",
-      key: "dashboard",
-    },
-    {
-      title: "Cadastros Fiscais",
-      icon: <Icon name="receipt" size={18} />,
-      path: "/tax",
-      key: "tax",
     },
   ];
-
-  const menuItems = isSuperAdmin ? adminMenuItems.filter((item) => !item.showOnlyForSuperAdmin || isSuperAdmin) : userMenuItems;
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="border-r border-slate-300/60 bg-slate-900 shadow-lg">
@@ -88,11 +54,11 @@ export const AppSidebar = ({ activeItem }: AppSidebarProps) => {
         <div className="flex items-center justify-between gap-4 px-0 py-0">
           <div className="flex items-center gap-4">
             <div className="flex items-center justify-center p-0">
-              <img src={nexxusLogo} alt="Nexxus Logo" className="h-16 w-16 object-contain" />
+              <img src={nexxusLogo} alt="AxxosTur Logo" className="h-16 w-16 object-contain" />
             </div>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-              <span className="text-xl font-bold text-white tracking-tight">Nexxus</span>
-              <span className="text-sm text-slate-300 font-medium">Gestor Tributário</span>
+              <span className="text-xl font-bold text-white tracking-tight">AxxosTur</span>
+              <span className="text-sm text-slate-300 font-medium">Gestão de Viagens</span>
             </div>
           </div>
           <SidebarTrigger className="group-data-[collapsible=icon]:mx-auto p-2 rounded-lg hover:bg-slate-800 transition-all duration-200 text-slate-400 hover:text-white" />
@@ -106,19 +72,11 @@ export const AppSidebar = ({ activeItem }: AppSidebarProps) => {
             <SidebarMenu className="space-y-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.key}>
-                  <SidebarMenuButton
-                    isActive={activeItem === item.key}
-                    tooltip={item.title}
-                    className={`
-											cursor-pointer text-sm font-medium py-3 px-4 rounded-xl transition-all duration-200 group
-											${activeItem === item.key ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg " : "text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-sm"}
-										`}
-                    onClick={() => navigate(item.path)}
-                  >
+                  <SidebarMenuButton tooltip={item.title} className="cursor-pointer text-sm font-medium py-3 px-4 rounded-xl transition-all duration-200 group text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-sm" onClick={() => navigate(item.path)}>
                     <div className="flex items-center justify-center transition-all duration-200">
                       {React.cloneElement(item.icon, {
                         size: 18,
-                        className: activeItem === item.key ? "text-white" : "text-slate-300 group-hover:text-white",
+                        className: "text-slate-300 group-hover:text-white",
                       })}
                     </div>
                     <span className="ml-3 font-medium group-data-[collapsible=icon]:hidden">{item.title}</span>
@@ -133,11 +91,8 @@ export const AppSidebar = ({ activeItem }: AppSidebarProps) => {
       <SidebarFooter className="border-t border-slate-700/50 bg-slate-800/50 px-4 py-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={logout} tooltip="Sair" className="cursor-pointer text-sm font-medium py-3 px-4 rounded-xl transition-all duration-200 text-red-400 hover:bg-red-900/30 hover:text-red-300 hover:shadow-sm group">
-              <div className="flex items-center justify-center transition-all duration-200">
-                <Icon name="logout" size={18} className="text-red-400 group-hover:text-red-300" />
-              </div>
-              <span className="ml-3 font-medium group-data-[collapsible=icon]:hidden">Sair</span>
+            <SidebarMenuButton onClick={() => logout()} tooltip="Sair" className="cursor-pointer text-sm font-medium py-3 px-4 rounded-xl transition-all duration-200 text-red-400 hover:bg-red-900/30 hover:text-red-300 hover:shadow-sm group">
+              Sair
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

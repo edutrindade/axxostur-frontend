@@ -1,23 +1,148 @@
-# 🚁 Drone Flow Admin
+# AxxosTur - Frontend
 
-<div align="center">
-  <img src="https://img.shields.io/badge/React-19.1.1-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React" />
-  <img src="https://img.shields.io/badge/TypeScript-5.8.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Vite-7.1.0-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
-  <img src="https://img.shields.io/badge/TailwindCSS-4.1.11-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="TailwindCSS" />
-</div>
+Plataforma multitenant para gestão de viagens, pacotes e operações de turismo.
 
-## 📋 Sobre o Projeto
+## 🚀 Começando
 
-O **Drone Flow Admin** é um sistema de gerenciamento administrativo desenvolvido para o cadastro e controle de empresas e parceiros que utilizam o sistema Drone Flow. Esta aplicação oferece uma interface moderna e intuitiva para administradores gerenciarem usuários, empresas parceiras e todas as operações relacionadas ao ecossistema de drones.
+### Pré-requisitos
 
-### 🎯 Principais Funcionalidades
+- Node.js 18+
+- npm ou yarn
 
-- **Gerenciamento de Usuários**: Cadastro, edição e controle de status de usuários do sistema
-- **Autenticação Segura**: Sistema completo de login com recuperação de senha
-- **Interface Responsiva**: Design moderno e adaptável para diferentes dispositivos
-- **Gestão de Empresas**: Controle de empresas parceiras e seus dados
-- **Dashboard Administrativo**: Visão geral das operações e métricas do sistema
+### Instalação
+
+1. Clone o repositório:
+```bash
+git clone <repository-url>
+cd nexxustur-frontend
+```
+
+2. Instale as dependências:
+```bash
+npm install
+```
+
+3. Configure as variáveis de ambiente:
+```bash
+cp .env.example .env
+```
+
+Edite o arquivo `.env` com as configurações corretas:
+```
+VITE_API_BASE_URL=http://localhost:3000/api
+```
+
+### Desenvolvimento
+
+Inicie o servidor de desenvolvimento:
+```bash
+npm run dev
+```
+
+A aplicação estará disponível em `http://localhost:5173`
+
+### Build
+
+Para gerar a build de produção:
+```bash
+npm run build
+```
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├── pages/              # Páginas da aplicação
+│   ├── Login.tsx      # Página de login
+│   └── Home.tsx       # Dashboard principal
+├── components/        # Componentes reutilizáveis
+│   ├── AppSidebar.tsx     # Menu lateral
+│   ├── Dashboard.tsx       # Layout principal
+│   └── ui/                 # Componentes UI base
+├── services/          # Serviços de API
+│   ├── api.ts         # Configuração do axios
+│   └── auth.ts        # Endpoints de autenticação
+├── contexts/          # Contextos React
+│   ├── auth.ts        # Tipos do contexto de auth
+│   └── AuthContext.tsx # Provider de autenticação
+├── hooks/             # Hooks customizados
+│   └── useAuth.ts     # Hook para usar o contexto de auth
+└── lib/               # Utilitários
+    └── utils.ts       # Funções auxiliares
+```
+
+## 🔐 Autenticação
+
+O sistema utiliza JWT para autenticação. Os tokens são armazenados no localStorage e cookies.
+
+### Endpoints de Autenticação
+
+- `POST /auth/login` - Fazer login
+- `POST /auth/register` - Registrar novo usuário
+- `POST /auth/logout` - Fazer logout
+- `GET /auth/profile` - Obter perfil do usuário
+- `PATCH /auth/profile` - Atualizar perfil
+- `POST /auth/change-password` - Alterar senha
+- `POST /auth/refresh` - Renovar token
+
+## 🛠️ Endpoints da API
+
+A API está documentada na collection do Insomnia: `AxxosTurCollection.yaml`
+
+### Módulos Principais
+
+1. **Auth** - Autenticação e gerenciamento de usuários
+2. **Companies** - Gerenciamento de empresas
+3. **Addresses** - Gerenciamento de endereços
+4. **Users** - Gerenciamento de usuários das empresas
+5. **Clients** - Gerenciamento de clientes
+6. **Travelers** - Gerenciamento de viajantes
+7. **Buses** - Gerenciamento de ônibus
+8. **Hotels** - Gerenciamento de hotéis
+9. **Packages** - Gerenciamento de pacotes de viagem
+10. **Package-Trips** - Gerenciamento de viagens (datas)
+11. **Sales** - Gerenciamento de vendas
+12. **Sale-Travelers** - Viajantes de cada venda
+13. **Cash Flows** - Fluxo de caixa
+14. **Receivables** - Contas a receber
+15. **Payables** - Contas a pagar
+
+## 🎨 Design System
+
+O projeto utiliza:
+- Tailwind CSS para estilização
+- Shadcn/ui para componentes base
+- Lucide React para ícones
+
+## 📦 Dependências Principais
+
+- React 18+
+- React Router DOM - Roteamento
+- Axios - Cliente HTTP
+- TanStack Query - Gerenciamento de estado assíncrono
+- Tailwind CSS - Estilização
+- Shadcn/ui - Componentes UI
+- Sonner - Notificações toast
+- Zod - Validação de schemas
+
+## ⚙️ Configuração API
+
+A URL base da API pode ser configurada via variável de ambiente:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000/api
+```
+
+Em produção, atualize este valor para apontar para sua API.
+
+## 🔄 Fluxo de Autenticação
+
+1. Usuário faz login com email e senha
+2. Backend retorna `accessToken` e `refreshToken`
+3. Tokens são armazenados no localStorage e cookies
+4. `accessToken` é enviado em todas as requisições (header Authorization)
+5. Quando `accessToken` expira, `refreshToken` é usado para renovar
+6. Em caso de erro 401, usuário é redirecionado para login
 - **Temas Personalizáveis**: Suporte a modo claro e escuro
 
 ## 🛠️ Tecnologias Utilizadas

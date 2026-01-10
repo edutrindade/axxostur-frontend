@@ -2,34 +2,27 @@ import { createContext } from "react";
 
 export interface User {
   id: string;
-  roleId: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
+  name: string;
   email: string;
-  cpf: string;
-  birthDate: string | null;
-  firstLogin: boolean;
-  lastLoginAt: string | null;
+  phone: string;
+  cpf?: string;
+  role: "super_admin" | "admin" | "user";
+  companyId?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export type Role = "ADMIN" | "CLIENT";
+export type Role = "super_admin" | "admin" | "user";
 
 export interface AuthContextType {
   user: User | null;
   role: Role | null;
-  tenantId: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  isAdmin: boolean;
-  isClient: boolean;
-  // Temporário: manter enquanto páginas antigas usam esta flag
   isSuperAdmin: boolean;
+  isAdmin: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  updateUserFirstLogin: () => void;
+  logout: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
