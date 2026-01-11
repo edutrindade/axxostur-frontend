@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import axxosTurLogo from "@/assets/img/axxostur-logo.png";
 
 const Login = () => {
-  const navigate = useNavigate();
   const { login, isLoading } = useAuth();
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
@@ -18,36 +17,27 @@ const Login = () => {
     e.preventDefault();
 
     if (!email || !password) {
-      toast.error("Preencha todos os campos", {
+      toast.warning("Campos obrigatórios", {
         description: "E-mail e senha são obrigatórios.",
       });
       return;
     }
 
-    try {
-      const success = await login(email, password);
+    const result = await login(email, password);
 
-      if (success) {
-        toast.success("Login realizado com sucesso.", {
-          description: "Bem-vindo ao AxxosTur!",
-        });
-
-        // Aguarda um pouco para o contexto ser atualizado e depois redireciona
-        setTimeout(() => {
-          navigate("/");
-        }, 100);
-      }
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || "Verifique suas credenciais e tente novamente.";
+    if (result.success) {
+      toast.success("Login realizado com sucesso", {
+        description: "Bem-vindo ao AxxosTur!",
+      });
+    } else {
       toast.error("Erro ao fazer login", {
-        description: errorMessage,
+        description: "E-mail ou senha inválidos.",
       });
     }
   };
 
   return (
     <div className="min-h-screen relative overflow-hidden animate-fade-in">
-      {/* Background com cores da logo */}
       <div
         className="absolute inset-0"
         style={{

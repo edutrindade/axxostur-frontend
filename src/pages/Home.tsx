@@ -1,9 +1,18 @@
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
+import FirstAccessPasswordModal from "@/components/FirstAccessPasswordModal";
 
 const Home = () => {
   const { user } = useAuth();
+  const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
+
+  useEffect(() => {
+    if (user?.firstAccess) {
+      setShowFirstAccessModal(true);
+    }
+  }, [user?.firstAccess]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -144,6 +153,8 @@ const Home = () => {
           </Card>
         </div>
       </div>
+
+      {showFirstAccessModal && user && <FirstAccessPasswordModal userName={user.name} onSuccess={() => setShowFirstAccessModal(false)} />}
     </div>
   );
 };

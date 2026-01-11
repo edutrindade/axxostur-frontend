@@ -8,6 +8,7 @@ export interface User {
   cpf?: string;
   role: "super_admin" | "admin" | "attendant";
   companyId?: string;
+  firstAccess?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -27,6 +28,7 @@ export interface UpdateProfileRequest {
   cpf?: string;
   phone?: string;
   name?: string;
+  password?: string;
 }
 
 export interface ChangePasswordRequest {

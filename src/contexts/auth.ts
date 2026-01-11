@@ -8,6 +8,7 @@ export interface User {
   cpf?: string;
   role: "super_admin" | "admin" | "attendant";
   companyId?: string;
+  firstAccess?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,7 +22,7 @@ export interface AuthContextType {
   isLoading: boolean;
   isSuperAdmin: boolean;
   isAdmin: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; user?: User }>;
   logout: () => Promise<void>;
 }
 

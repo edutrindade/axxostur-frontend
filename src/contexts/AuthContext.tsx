@@ -12,6 +12,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<Role | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Sincronizar autenticação inicial
   useEffect(() => {
@@ -25,6 +26,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem("user");
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
+    } finally {
+      setIsInitializing(false);
     }
   }, []);
 
@@ -33,8 +36,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     mutationFn: async (credentials: { email: string; password: string }) => {
       return await apiLogin(credentials);
     },
-    onSuccess: (data) => {
-      setUser(data.user);
+    onSuccess: (data: any) => {
+      const userWithFirstAccess = {
+        ...data.user,
+      };
+      setUser(userWithFirstAccess);
       setRole(data.user.role);
       queryClient.invalidateQueries({ queryKey: ["auth"] });
     },
@@ -67,15 +73,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     role,
     isAuthenticated: !!user,
-    isLoading: loginMutation.isPending || logoutMutation.isPending,
+    isLoading: isInitializing || loginMutation.isPending || logoutMutation.isPending,
     isSuperAdmin: user?.role === "super_admin",
     isAdmin: user?.role === "admin" || user?.role === "super_admin",
     login: async (email: string, password: string) => {
       try {
-        await loginMutation.mutateAsync({ email, password });
-        return true;
+        const data = await loginMutation.mutateAsync({ email, password });
+        const userWithFirstAccess = {
+          ...data.user,
+        };
+        return { success: true, user: userWithFirstAccess };
       } catch {
-        return false;
+        return { success: false };
       }
     },
     logout: () => logoutMutation.mutateAsync(),
