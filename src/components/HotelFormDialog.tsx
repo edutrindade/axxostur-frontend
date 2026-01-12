@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Icon } from "@/components/ui/icon";
+import { TimePicker } from "@/components/ui/time-picker";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import type { Hotel, CreateHotelRequest, UpdateHotelRequest } from "@/services/hotels";
@@ -294,12 +295,12 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
 
               <div className="space-y-2">
                 <label className="text-base font-medium text-slate-700">Horário de Check-in</label>
-                <Input type="time" value={formData.checkInTime} onChange={(e) => setFormData({ ...formData, checkInTime: e.target.value })} disabled={isLoading} />
+                <TimePicker value={formData.checkInTime} onChange={(time) => setFormData({ ...formData, checkInTime: time })} disabled={isLoading} />
               </div>
 
               <div className="space-y-2">
                 <label className="text-base font-medium text-slate-700">Horário de Check-out</label>
-                <Input type="time" value={formData.checkOutTime} onChange={(e) => setFormData({ ...formData, checkOutTime: e.target.value })} disabled={isLoading} />
+                <TimePicker value={formData.checkOutTime} onChange={(time) => setFormData({ ...formData, checkOutTime: time })} disabled={isLoading} />
               </div>
             </div>
           </div>
