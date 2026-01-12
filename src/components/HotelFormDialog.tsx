@@ -68,7 +68,30 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
         totalRooms: hotel.totalRooms?.toString() || "",
         stars: hotel.stars?.toString() || "",
       });
-      setSelectedAddress(null);
+      
+      if (hotel.address) {
+        setSelectedAddress(hotel.address as Address);
+        setAddressData({
+          zipCode: hotel.address.zipCode || "",
+          street: hotel.address.street || "",
+          number: hotel.address.number || "",
+          complement: hotel.address.complement || "",
+          neighborhood: hotel.address.neighborhood || "",
+          city: hotel.address.city || "",
+          state: hotel.address.state || "",
+        });
+      } else {
+        setSelectedAddress(null);
+        setAddressData({
+          zipCode: "",
+          street: "",
+          number: "",
+          complement: "",
+          neighborhood: "",
+          city: "",
+          state: "",
+        });
+      }
     } else {
       setFormData({
         name: "",
@@ -83,16 +106,16 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
         stars: "",
       });
       setSelectedAddress(null);
+      setAddressData({
+        zipCode: "",
+        street: "",
+        number: "",
+        complement: "",
+        neighborhood: "",
+        city: "",
+        state: "",
+      });
     }
-    setAddressData({
-      zipCode: "",
-      street: "",
-      number: "",
-      complement: "",
-      neighborhood: "",
-      city: "",
-      state: "",
-    });
   }, [hotel, open]);
 
   const handleFetchAddress = async () => {

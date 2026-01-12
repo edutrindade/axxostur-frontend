@@ -23,6 +23,7 @@ const Navbar = () => {
       "/attendant/pos": "PDV",
       "/settings": "Configurações",
       "/enterprises": "Empresas",
+      "/profile": "Meu Perfil",
     };
 
     return paths[location.pathname] || "Página";

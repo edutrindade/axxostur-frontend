@@ -17,6 +17,7 @@ import Financial from "@/pages/admin/Financial";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import AttendantCustomers from "@/pages/attendant/AttendantCustomers";
 import AttendantPOS from "@/pages/attendant/AttendantPOS";
+import Profile from "@/pages/Profile";
 
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
@@ -162,6 +163,15 @@ const AppRoutes = () => {
                     <AdminSettings />
                   );
                 })()}
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute allowedRoles={["super_admin", "admin", "attendant"]}>
+                <Profile />
               </ProtectedRoute>
             }
           />
