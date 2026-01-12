@@ -68,7 +68,7 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
         totalRooms: hotel.totalRooms?.toString() || "",
         stars: hotel.stars?.toString() || "",
       });
-      
+
       if (hotel.address) {
         setSelectedAddress(hotel.address as Address);
         setAddressData({
