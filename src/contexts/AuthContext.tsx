@@ -37,10 +37,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return await apiLogin(credentials);
     },
     onSuccess: (data: any) => {
-      const userWithFirstAccess = {
-        ...data.user,
-      };
-      setUser(userWithFirstAccess);
+      setUser(data.user);
       setRole(data.user.role);
       queryClient.invalidateQueries({ queryKey: ["auth"] });
     },
@@ -72,6 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     role,
+    company: user?.company || null,
     isAuthenticated: !!user,
     isLoading: isInitializing || loginMutation.isPending || logoutMutation.isPending,
     isSuperAdmin: user?.role === "super_admin",
@@ -79,10 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login: async (email: string, password: string) => {
       try {
         const data = await loginMutation.mutateAsync({ email, password });
-        const userWithFirstAccess = {
-          ...data.user,
-        };
-        return { success: true, user: userWithFirstAccess };
+        return { success: true, user: data.user };
       } catch {
         return { success: false };
       }
