@@ -24,6 +24,7 @@ const HotelsList = () => {
 
   const [openFormDialog, setOpenFormDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | undefined>();
 
   const hotels = hotelsResponse?.data || [];
@@ -37,6 +38,11 @@ const HotelsList = () => {
   const handleCreateClick = () => {
     setSelectedHotel(undefined);
     setOpenFormDialog(true);
+  };
+
+  const handleRowClick = (hotel: Hotel) => {
+    setSelectedHotel(hotel);
+    setOpenDetailsDialog(true);
   };
 
   const handleEditClick = (hotel: Hotel) => {
@@ -136,7 +142,7 @@ const HotelsList = () => {
               </TableHeader>
               <TableBody>
                 {hotels.map((hotel) => (
-                  <TableRow key={hotel.id} className="border-b border-slate-100 hover:bg-slate-50">
+                  <TableRow key={hotel.id} className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer" onClick={() => handleRowClick(hotel)}>
                     <TableCell className="font-medium text-slate-900">{hotel.name}</TableCell>
                     <TableCell className="text-slate-600">
                       {hotel.stars && (
@@ -161,7 +167,7 @@ const HotelsList = () => {
                     <TableCell>
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${hotel.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{hotel.active ? "Ativo" : "Inativo"}</span>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
                         <Button onClick={() => handleEditClick(hotel)} size="sm" variant="outline">
                           <Icon name="edit" size={16} />
@@ -182,7 +188,7 @@ const HotelsList = () => {
 
           <div className="lg:hidden space-y-4">
             {hotels.map((hotel) => (
-              <div key={hotel.id} className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+              <div key={hotel.id} className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleRowClick(hotel)}>
                 <div className="space-y-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -208,14 +214,14 @@ const HotelsList = () => {
 
                   {hotel.description && <p className="text-sm text-slate-600 line-clamp-2">{hotel.description}</p>}
 
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
                     <Button onClick={() => handleEditClick(hotel)} size="sm" variant="outline" className="flex-1">
                       <Icon name="edit" size={16} className="mr-1" />
                       Editar
                     </Button>
                     <Button onClick={() => handleDeleteClick(hotel)} size="sm" variant="destructive" className="flex-1">
                       <Icon name="delete" size={16} className="mr-1" />
-                      Deletar
+                      Remover
                     </Button>
                   </div>
                 </div>
@@ -256,6 +262,141 @@ const HotelsList = () => {
             </Button>
             <Button onClick={handleConfirmDelete} disabled={deleteHotelMutation.isPending} variant="destructive">
               {deleteHotelMutation.isPending ? "Removendo..." : "Remover"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openDetailsDialog} onOpenChange={setOpenDetailsDialog}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900">{selectedHotel?.name}</DialogTitle>
+            <DialogDescription className="text-slate-600">Detalhes do hotel</DialogDescription>
+          </DialogHeader>
+
+          {selectedHotel && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</p>
+                  <p className="text-sm">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${selectedHotel.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{selectedHotel.active ? "Ativo" : "Inativo"}</span>
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Classificação</p>
+                  <div className="flex items-center gap-1">
+                    {selectedHotel.stars ? Array.from({ length: selectedHotel.stars }).map((_, i) => <Icon key={i} name="star" size={16} className="fill-yellow-400 text-yellow-400" />) : <span className="text-slate-600 text-sm">Sem classificação</span>}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Contato</p>
+                  <div className="space-y-1">
+                    {selectedHotel.phone ? <p className="text-sm text-slate-900 font-medium">{formatPhone(selectedHotel.phone)}</p> : <p className="text-sm text-slate-500">-</p>}
+                    {selectedHotel.email && <p className="text-sm text-slate-600">{selectedHotel.email}</p>}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Quartos</p>
+                  <p className="text-sm text-slate-900">{selectedHotel.totalRooms || "-"}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Check-in</p>
+                  <p className="text-sm text-slate-900">{selectedHotel.checkInTime || "-"}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Check-out</p>
+                  <p className="text-sm text-slate-900">{selectedHotel.checkOutTime || "-"}</p>
+                </div>
+              </div>
+
+              {selectedHotel.website && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Website</p>
+                  <p className="text-sm">
+                    <a href={selectedHotel.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline">
+                      {selectedHotel.website}
+                    </a>
+                  </p>
+                </div>
+              )}
+
+              {selectedHotel.description && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Descrição</p>
+                  <p className="text-sm text-slate-700 leading-relaxed">{selectedHotel.description}</p>
+                </div>
+              )}
+
+              {selectedHotel.internalNotes && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Anotações Internas</p>
+                  <p className="text-sm text-slate-700 leading-relaxed">{selectedHotel.internalNotes}</p>
+                </div>
+              )}
+
+              {selectedHotel.address && (
+                <div className="space-y-2 border-t border-slate-200 pt-6">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Endereço</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Rua</p>
+                      <p>{selectedHotel.address.street}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Número</p>
+                      <p>{selectedHotel.address.number}</p>
+                    </div>
+                    {selectedHotel.address.complement && (
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Complemento</p>
+                        <p>{selectedHotel.address.complement}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Bairro</p>
+                      <p>{selectedHotel.address.neighborhood}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Cidade</p>
+                      <p>{selectedHotel.address.city}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Estado</p>
+                      <p>{selectedHotel.address.state}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">CEP</p>
+                      <p>{selectedHotel.address.zipCode}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2 border-t border-slate-200 pt-6 text-xs text-slate-500">
+                <p>Criado em: {new Date(selectedHotel.createdAt).toLocaleDateString("pt-BR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
+                <p>Última atualização: {new Date(selectedHotel.updatedAt).toLocaleDateString("pt-BR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 mt-6">
+            <Button type="button" variant="outline" onClick={() => setOpenDetailsDialog(false)}>
+              Fechar
+            </Button>
+            <Button
+              onClick={() => {
+                setOpenDetailsDialog(false);
+                handleEditClick(selectedHotel!);
+              }}
+            >
+              <Icon name="edit" size={16} className="mr-2" />
+              Editar
             </Button>
           </div>
         </DialogContent>

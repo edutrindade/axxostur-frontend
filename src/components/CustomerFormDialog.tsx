@@ -4,40 +4,37 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Icon } from "@/components/ui/icon";
-import { TimePicker } from "@/components/ui/time-picker";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import type { Hotel, CreateHotelRequest, UpdateHotelRequest } from "@/services/hotels";
+import type { Customer, CreateCustomerRequest, UpdateCustomerRequest } from "@/services/customers";
 import type { Address } from "@/services/addresses";
+import { formatPhone, formatCpf } from "@/utils/format";
 import { fetchAddressFromViaCEP } from "@/services/addresses";
 import { useCreateAddressMutation, useUpdateAddressMutation } from "@/hooks/useAddressesMutations";
-import { formatPhone } from "@/utils/format";
 
 const STATES = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
-interface HotelFormDialogProps {
+interface CustomerFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: CreateHotelRequest | UpdateHotelRequest) => void;
+  onSubmit: (data: CreateCustomerRequest | UpdateCustomerRequest) => void;
   isLoading: boolean;
-  hotel?: Hotel;
+  customer?: Customer;
   title: string;
   description: string;
   companyId: string;
 }
 
-export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel, title, description, companyId }: HotelFormDialogProps) => {
+export const CustomerFormDialog = ({ open, onOpenChange, onSubmit, isLoading, customer, title, description, companyId }: CustomerFormDialogProps) => {
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
     email: "",
     phone: "",
-    website: "",
-    checkInTime: "14:00",
-    checkOutTime: "12:00",
-    internalNotes: "",
-    totalRooms: "",
-    stars: "",
+    cpf: "",
+    document: "",
+    birthDate: "",
+    gender: "",
+    notes: "",
   });
 
   const [addressData, setAddressData] = useState({
@@ -57,31 +54,37 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
   const createAddressMutation = useCreateAddressMutation();
   const updateAddressMutation = useUpdateAddressMutation();
 
+  const formatDateForInput = (dateString: string): string => {
+    if (!dateString) return "";
+    if (dateString.includes("T")) {
+      return dateString.split("T")[0];
+    }
+    return dateString;
+  };
+
   useEffect(() => {
-    if (hotel) {
+    if (customer) {
       setFormData({
-        name: hotel.name || "",
-        description: hotel.description || "",
-        email: hotel.email || "",
-        phone: hotel.phone ? formatPhone(hotel.phone) : "",
-        website: hotel.website || "",
-        checkInTime: hotel.checkInTime || "14:00",
-        checkOutTime: hotel.checkOutTime || "12:00",
-        internalNotes: hotel.internalNotes || "",
-        totalRooms: hotel.totalRooms?.toString() || "",
-        stars: hotel.stars?.toString() || "",
+        name: customer.name || "",
+        email: customer.email || "",
+        phone: customer.phone ? formatPhone(customer.phone) : "",
+        cpf: customer.cpf ? formatCpf(customer.cpf) : "",
+        document: customer.document || "",
+        birthDate: formatDateForInput(customer.birthDate || ""),
+        gender: customer.gender || "",
+        notes: customer.notes || "",
       });
 
-      if (hotel.address) {
-        setSelectedAddress(hotel.address as Address);
+      if (customer.address && Object.keys(customer.address).length > 0) {
+        setSelectedAddress(customer.address as Address);
         setAddressData({
-          zipCode: hotel.address.zipCode || "",
-          street: hotel.address.street || "",
-          number: hotel.address.number || "",
-          complement: hotel.address.complement || "",
-          neighborhood: hotel.address.neighborhood || "",
-          city: hotel.address.city || "",
-          state: hotel.address.state || "",
+          zipCode: customer.address.zipCode || "",
+          street: customer.address.street || "",
+          number: customer.address.number || "",
+          complement: customer.address.complement || "",
+          neighborhood: customer.address.neighborhood || "",
+          city: customer.address.city || "",
+          state: customer.address.state || "",
         });
       } else {
         setSelectedAddress(null);
@@ -98,15 +101,13 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
     } else {
       setFormData({
         name: "",
-        description: "",
         email: "",
         phone: "",
-        website: "",
-        checkInTime: "14:00",
-        checkOutTime: "12:00",
-        internalNotes: "",
-        totalRooms: "",
-        stars: "",
+        cpf: "",
+        document: "",
+        birthDate: "",
+        gender: "",
+        notes: "",
       });
       setSelectedAddress(null);
       setAddressData({
@@ -119,7 +120,7 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
         state: "",
       });
     }
-  }, [hotel, open]);
+  }, [customer, open]);
 
   const handleFetchAddress = async () => {
     if (!addressData.zipCode) {
@@ -187,44 +188,35 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Evitar submissão acidental quando formulário de endereço está aberto
-    if (showAddressForm) {
-      return;
-    }
-
     if (!formData.name) {
-      toast.error("Nome do hotel é obrigatório");
+      toast.error("Nome do cliente é obrigatório");
       return;
     }
 
-    if (hotel) {
-      const updateData: UpdateHotelRequest = {
+    if (customer) {
+      const updateData: UpdateCustomerRequest = {
         name: formData.name,
-        description: formData.description || undefined,
         email: formData.email || undefined,
         phone: formData.phone ? formData.phone.replace(/\D/g, "") : undefined,
-        website: formData.website || undefined,
-        checkInTime: formData.checkInTime || undefined,
-        checkOutTime: formData.checkOutTime || undefined,
-        internalNotes: formData.internalNotes || undefined,
-        totalRooms: formData.totalRooms ? parseInt(formData.totalRooms) : undefined,
-        stars: formData.stars ? parseInt(formData.stars) : undefined,
+        cpf: formData.cpf ? formData.cpf.replace(/\D/g, "") : undefined,
+        document: formData.document ? formData.document.replace(/\D/g, "").replace(/\s/g, "") : undefined,
+        birthDate: formData.birthDate || undefined,
+        gender: (formData.gender as "male" | "female" | "other") || undefined,
+        notes: formData.notes || undefined,
         ...(selectedAddress && { addressId: selectedAddress.id }),
       };
       onSubmit(updateData);
     } else {
-      const createData: CreateHotelRequest = {
+      const createData: CreateCustomerRequest = {
         name: formData.name,
         companyId: companyId,
-        description: formData.description || undefined,
         email: formData.email || undefined,
         phone: formData.phone ? formData.phone.replace(/\D/g, "") : undefined,
-        website: formData.website || undefined,
-        checkInTime: formData.checkInTime || undefined,
-        checkOutTime: formData.checkOutTime || undefined,
-        internalNotes: formData.internalNotes || undefined,
-        totalRooms: formData.totalRooms ? parseInt(formData.totalRooms) : undefined,
-        stars: formData.stars ? parseInt(formData.stars) : undefined,
+        cpf: formData.cpf ? formData.cpf.replace(/\D/g, "") : undefined,
+        document: formData.document ? formData.document.replace(/\D/g, "").replace(/\s/g, "") : undefined,
+        birthDate: formData.birthDate || undefined,
+        gender: (formData.gender as "male" | "female" | "other") || undefined,
+        notes: formData.notes || undefined,
         ...(selectedAddress && { addressId: selectedAddress.id }),
       };
       onSubmit(createData);
@@ -232,15 +224,13 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
 
     setFormData({
       name: "",
-      description: "",
       email: "",
       phone: "",
-      website: "",
-      checkInTime: "14:00",
-      checkOutTime: "12:00",
-      internalNotes: "",
-      totalRooms: "",
-      stars: "",
+      cpf: "",
+      document: "",
+      birthDate: "",
+      gender: "",
+      notes: "",
     });
     setSelectedAddress(null);
     onOpenChange(false);
@@ -257,39 +247,42 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4 md:border-r md:pr-6">
-              <h3 className="text-base font-semibold text-slate-900">Informações Básicas</h3>
+              <h3 className="text-base font-semibold text-slate-900">Informações Pessoais</h3>
 
               <div className="space-y-2">
                 <label className="text-base font-medium text-slate-700">
-                  Nome do Hotel <span className="text-red-500">*</span>
+                  Nome <span className="text-red-500">*</span>
                 </label>
-                <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Ex: Hotel Paradise Resort" disabled={isLoading} />
+                <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Ex: João Santos" disabled={isLoading} />
               </div>
 
               <div className="space-y-2">
-                <label className="text-base font-medium text-slate-700">Classificação (Estrelas)</label>
-                <Select value={formData.stars} onValueChange={(value) => setFormData({ ...formData, stars: value })} disabled={isLoading}>
+                <label className="text-base font-medium text-slate-700">CPF</label>
+                <Input value={formData.cpf} onChange={(e) => setFormData({ ...formData, cpf: formatCpf(e.target.value) })} placeholder="000.000.000-00" disabled={isLoading} maxLength={14} />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-base font-medium text-slate-700">Documento</label>
+                <Input value={formData.document} onChange={(e) => setFormData({ ...formData, document: e.target.value })} placeholder="Ex: MG123456789" disabled={isLoading} />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-base font-medium text-slate-700">Data de Nascimento</label>
+                <Input type="date" value={formData.birthDate} onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })} disabled={isLoading} />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-base font-medium text-slate-700">Gênero</label>
+                <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value })} disabled={isLoading}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione a classificação" />
+                    <SelectValue placeholder="Selecione o gênero" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1 Estrela</SelectItem>
-                    <SelectItem value="2">2 Estrelas</SelectItem>
-                    <SelectItem value="3">3 Estrelas</SelectItem>
-                    <SelectItem value="4">4 Estrelas</SelectItem>
-                    <SelectItem value="5">5 Estrelas</SelectItem>
+                    <SelectItem value="male">Masculino</SelectItem>
+                    <SelectItem value="female">Feminino</SelectItem>
+                    <SelectItem value="other">Outro</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-base font-medium text-slate-700">Total de Quartos</label>
-                <Input type="text" value={formData.totalRooms} onChange={(e) => setFormData({ ...formData, totalRooms: e.target.value })} placeholder="Ex: 20" disabled={isLoading} min="0" />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-base font-medium text-slate-700">Descrição</label>
-                <Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Descreva o hotel..." disabled={isLoading} className="resize-none" rows={4} />
               </div>
             </div>
 
@@ -298,27 +291,12 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
 
               <div className="space-y-2">
                 <label className="text-base font-medium text-slate-700">Email</label>
-                <Input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="contato@hotel.com.br" disabled={isLoading} />
+                <Input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="joao.santos@email.com" disabled={isLoading} />
               </div>
 
               <div className="space-y-2">
                 <label className="text-base font-medium text-slate-700">Telefone</label>
                 <Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })} placeholder="(85) 3366-1234" disabled={isLoading} maxLength={15} />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-base font-medium text-slate-700">Website</label>
-                <Input type="url" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} placeholder="https://www.hotel.com.br" disabled={isLoading} />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-base font-medium text-slate-700">Horário de Check-in</label>
-                <TimePicker value={formData.checkInTime} onChange={(time) => setFormData({ ...formData, checkInTime: time })} disabled={isLoading} />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-base font-medium text-slate-700">Horário de Check-out</label>
-                <TimePicker value={formData.checkOutTime} onChange={(time) => setFormData({ ...formData, checkOutTime: time })} disabled={isLoading} />
               </div>
             </div>
           </div>
@@ -492,16 +470,16 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
           <div className="border-t" />
 
           <div className="space-y-4">
-            <h3 className="text-base font-semibold text-slate-900">Notas Internas</h3>
-            <Textarea value={formData.internalNotes} onChange={(e) => setFormData({ ...formData, internalNotes: e.target.value })} placeholder="Informações internas sobre o hotel..." disabled={isLoading} className="resize-none" rows={3} />
+            <h3 className="text-base font-semibold text-slate-900">Observações</h3>
+            <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Informações adicionais sobre o cliente..." disabled={isLoading} className="resize-none" rows={3} />
           </div>
 
           <div className="flex gap-3 justify-end pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading || showAddressForm}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading || showAddressForm}>
-              {isLoading ? "Salvando..." : hotel ? "Atualizar" : "Criar Hotel"}
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Salvando..." : customer ? "Atualizar" : "Criar Cliente"}
             </Button>
           </div>
         </form>
