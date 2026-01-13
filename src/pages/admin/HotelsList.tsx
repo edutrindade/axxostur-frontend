@@ -78,7 +78,7 @@ const HotelsList = () => {
     {
       key: "name",
       label: "Nome",
-      render: (value) => <span className="font-medium text-slate-900">{value}</span>,
+      render: (value) => <span className="font-semibold text-slate-900 text-base">{value}</span>,
     },
     {
       key: "stars",

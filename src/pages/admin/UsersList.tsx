@@ -2,40 +2,39 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-import { BusFormDialog } from "@/components/BusFormDialog";
+import { UserFormDialog } from "@/components/UserFormDialog";
 import { DataTable, type ColumnDef, type TableAction } from "@/components/DataTable";
 import { useAuth } from "@/hooks/useAuth";
-import { useBusesByCompanyQuery } from "@/hooks/useBusesQuery";
-import { useCreateBusMutation, useUpdateBusMutation, useDeleteBusMutation } from "@/hooks/useBusesMutations";
+import { useUsersListQuery } from "@/hooks/useUsersQuery";
+import { useCreateUserMutation, useUpdateUserMutation, useDeleteUserMutation } from "@/hooks/useUsersMutations";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { Bus, CreateBusFormData, UpdateBusFormData } from "@/types/bus";
+import type { User, CreateUserFormData, UpdateUserFormData } from "@/types/user";
 
-const BusesList = () => {
-  const { company } = useAuth();
+const UsersList = () => {
+  const { company, user: authUser } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const { data: busesResponse, isLoading: isLoadingBuses } = useBusesByCompanyQuery(company?.id || "", page, 20, search);
-  const createBusMutation = useCreateBusMutation();
-  const updateBusMutation = useUpdateBusMutation();
-  const deleteBusMutation = useDeleteBusMutation();
+  const { data: usersResponse, isLoading: isLoadingUsers } = useUsersListQuery(page, 20, search);
+  const createUserMutation = useCreateUserMutation();
+  const updateUserMutation = useUpdateUserMutation();
+  const deleteUserMutation = useDeleteUserMutation();
 
   const [openFormDialog, setOpenFormDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
-  const [selectedBus, setSelectedBus] = useState<Bus | undefined>();
+  const [selectedUser, setSelectedUser] = useState<User | undefined>();
 
-  const buses = busesResponse?.data || [];
-  const pagination = busesResponse?.pagination;
+  const users = usersResponse?.data || [];
+  const pagination = usersResponse?.pagination;
 
-  const getTypeLabel = (type: string) => {
+  const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
-      conventional: "Convencional",
-      semi_bed: "Semi-Leito",
-      bed: "Leito",
-      bed_cabin: "Leito Cabine",
+      admin: "Admin",
+      attendant: "Atendente",
+      super_admin: "Super Admin",
     };
-    return labels[type] || type;
+    return labels[role] || role;
   };
 
   const handleSearch = useCallback(() => {
@@ -44,65 +43,65 @@ const BusesList = () => {
   }, [searchInput]);
 
   const handleCreateClick = () => {
-    setSelectedBus(undefined);
+    setSelectedUser(undefined);
     setOpenFormDialog(true);
   };
 
-  const handleRowClick = (bus: Bus) => {
-    setSelectedBus(bus);
+  const handleRowClick = (user: User) => {
+    setSelectedUser(user);
     setOpenDetailsDialog(true);
   };
 
-  const handleEditClick = (bus: Bus) => {
-    setSelectedBus(bus);
+  const handleEditClick = (user: User) => {
+    setSelectedUser(user);
     setOpenFormDialog(true);
   };
 
-  const handleDeleteClick = (bus: Bus) => {
-    setSelectedBus(bus);
+  const handleDeleteClick = (user: User) => {
+    setSelectedUser(user);
     setOpenDeleteDialog(true);
   };
 
   const handleConfirmDelete = async () => {
-    if (selectedBus) {
-      await deleteBusMutation.mutateAsync(selectedBus.id);
+    if (selectedUser) {
+      await deleteUserMutation.mutateAsync(selectedUser.id);
       setOpenDeleteDialog(false);
-      setSelectedBus(undefined);
+      setSelectedUser(undefined);
     }
   };
 
-  const handleFormSubmit = async (data: CreateBusFormData | UpdateBusFormData) => {
-    if (selectedBus) {
-      await updateBusMutation.mutateAsync({
-        id: selectedBus.id,
-        data: data as UpdateBusFormData,
+  const handleFormSubmit = async (data: CreateUserFormData | UpdateUserFormData) => {
+    if (selectedUser) {
+      await updateUserMutation.mutateAsync({
+        id: selectedUser.id,
+        data: data as UpdateUserFormData,
       });
     } else {
-      await createBusMutation.mutateAsync(data as CreateBusFormData);
+      await createUserMutation.mutateAsync(data as CreateUserFormData);
     }
     setOpenFormDialog(false);
   };
 
-  const columns: ColumnDef<Bus>[] = [
+  const columns: ColumnDef<User>[] = [
     {
       key: "name",
       label: "Nome",
       render: (value) => <span className="font-semibold text-slate-900 text-base">{value}</span>,
     },
     {
-      key: "plate",
-      label: "Placa",
-      render: (value) => <span className="text-slate-600 font-mono uppercase">{value}</span>,
+      key: "email",
+      label: "Email",
+      render: (value) => <span className="text-slate-600 text-sm">{value}</span>,
     },
     {
-      key: "totalSeats",
-      label: "Assentos",
+      key: "phone",
+      label: "Telefone",
       render: (value) => <span className="text-slate-600">{value}</span>,
     },
     {
-      key: "type",
-      label: "Tipo",
-      render: (value) => <span className="text-slate-600">{getTypeLabel(value)}</span>,
+      key: "role",
+      label: "Função",
+      render: (value) => <span className="text-slate-600">{getRoleLabel(value)}</span>,
     },
     {
       key: "active",
@@ -111,7 +110,7 @@ const BusesList = () => {
     },
   ];
 
-  const tableActions: TableAction<Bus>[] = [
+  const tableActions: TableAction<User>[] = [
     {
       icon: "edit",
       label: "Editar",
@@ -127,21 +126,21 @@ const BusesList = () => {
     },
   ];
 
-  if (isLoadingBuses) {
+  if (isLoadingUsers) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Ônibus</h1>
-            <p className="text-slate-600 mt-2">Gerenciar frota de ônibus</p>
+            <h1 className="text-3xl font-bold text-slate-900">Usuários</h1>
+            <p className="text-slate-600 mt-2">Gerenciar usuários do sistema</p>
           </div>
           <Button disabled>
             <Icon name="plus" size={18} className="mr-2" />
-            Novo Ônibus
+            Novo Usuário
           </Button>
         </div>
         <div className="bg-white rounded-lg border border-slate-200 p-8 text-center">
-          <p className="text-slate-600">Carregando ônibus...</p>
+          <p className="text-slate-600">Carregando usuários...</p>
         </div>
       </div>
     );
@@ -151,12 +150,12 @@ const BusesList = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Ônibus</h1>
-          <p className="text-slate-600 mt-2">Gerenciar frota de ônibus</p>
+          <h1 className="text-3xl font-bold text-slate-900">Usuários</h1>
+          <p className="text-slate-600 mt-2">Gerenciar usuários do sistema</p>
         </div>
         <Button onClick={handleCreateClick}>
           <Icon name="plus" size={18} className="mr-2" />
-          Novo Ônibus
+          Novo Usuário
         </Button>
       </div>
 
@@ -166,7 +165,7 @@ const BusesList = () => {
             <div className="flex items-center gap-2 flex-1 bg-slate-50 rounded-lg px-3 py-0.5 border border-slate-200">
               <Icon name="search" size={18} className="text-blue-500 flex-shrink-0" />
               <Input
-                placeholder="Buscar por nome ou placa..."
+                placeholder="Buscar por nome ou email..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -174,7 +173,7 @@ const BusesList = () => {
                     handleSearch();
                   }
                 }}
-                disabled={isLoadingBuses}
+                disabled={isLoadingUsers}
                 className="border-0 bg-transparent focus:bg-transparent focus-visible:ring-0 shadow-none h-auto text-sm"
               />
             </div>
@@ -186,28 +185,29 @@ const BusesList = () => {
         </div>
 
         <DataTable
-          data={buses}
+          data={users}
           columns={columns}
           actions={tableActions}
           pagination={pagination}
           onPageChange={setPage}
           onRowClick={handleRowClick}
-          isLoading={isLoadingBuses}
-          emptyIcon="bus"
-          emptyTitle={search ? "Nenhum ônibus encontrado" : "Nenhum ônibus cadastrado"}
-          emptyDescription={search ? "Tente fazer uma nova busca" : "Comece adicionando seu primeiro ônibus"}
+          isLoading={isLoadingUsers}
+          emptyIcon="users"
+          emptyTitle={search ? "Nenhum usuário encontrado" : "Nenhum usuário cadastrado"}
+          emptyDescription={search ? "Tente fazer uma nova busca" : "Comece adicionando seu primeiro usuário"}
         />
       </div>
 
-      <BusFormDialog
+      <UserFormDialog
         open={openFormDialog}
         onOpenChange={setOpenFormDialog}
         onSubmit={handleFormSubmit}
-        isLoading={createBusMutation.isPending || updateBusMutation.isPending}
-        bus={selectedBus}
-        title={selectedBus ? "Editar Ônibus" : "Novo Ônibus"}
-        description={selectedBus ? "Atualize as informações do ônibus" : "Adicione um novo ônibus à sua frota"}
-        companyId={company?.id || ""}
+        isLoading={createUserMutation.isPending || updateUserMutation.isPending}
+        user={selectedUser}
+        title={selectedUser ? "Editar Usuário" : "Novo Usuário"}
+        description={selectedUser ? "Atualize as informações do usuário" : "Adicione um novo usuário ao sistema"}
+        companyId={company?.id}
+        isAdmin={authUser?.role === "super_admin"}
       />
 
       <Dialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
@@ -215,16 +215,16 @@ const BusesList = () => {
           <DialogHeader>
             <DialogTitle className="text-slate-900">Confirmar Exclusão</DialogTitle>
             <DialogDescription className="text-slate-600 mt-4">
-              Tem certeza que deseja remover o ônibus <span className="font-semibold text-slate-900">"{selectedBus?.name}"</span>? Esta ação não pode ser desfeita.
+              Tem certeza que deseja remover o usuário <span className="font-semibold text-slate-900">"{selectedUser?.name}"</span>? Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpenDeleteDialog(false)} disabled={deleteBusMutation.isPending}>
+            <Button type="button" variant="outline" onClick={() => setOpenDeleteDialog(false)} disabled={deleteUserMutation.isPending}>
               Cancelar
             </Button>
-            <Button onClick={handleConfirmDelete} disabled={deleteBusMutation.isPending} variant="destructive">
-              {deleteBusMutation.isPending ? "Removendo..." : "Remover"}
+            <Button onClick={handleConfirmDelete} disabled={deleteUserMutation.isPending} variant="destructive">
+              {deleteUserMutation.isPending ? "Removendo..." : "Remover"}
             </Button>
           </div>
         </DialogContent>
@@ -233,39 +233,44 @@ const BusesList = () => {
       <Dialog open={openDetailsDialog} onOpenChange={setOpenDetailsDialog}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-slate-900">{selectedBus?.name}</DialogTitle>
-            <DialogDescription className="text-slate-600">Detalhes do ônibus</DialogDescription>
+            <DialogTitle className="text-slate-900">{selectedUser?.name}</DialogTitle>
+            <DialogDescription className="text-slate-600">Detalhes do usuário</DialogDescription>
           </DialogHeader>
 
-          {selectedBus && (
+          {selectedUser && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</p>
+                  <p className="text-sm text-slate-900">{selectedUser.email}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Telefone</p>
+                  <p className="text-sm text-slate-900">{selectedUser.phone}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">CPF</p>
+                  <p className="text-sm text-slate-900">{selectedUser.cpf}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Função</p>
+                  <p className="text-sm text-slate-900">{getRoleLabel(selectedUser.role)}</p>
+                </div>
+
+                <div className="space-y-2">
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</p>
                   <p className="text-sm">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${selectedBus.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{selectedBus.active ? "Ativo" : "Inativo"}</span>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${selectedUser.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{selectedUser.active ? "Ativo" : "Inativo"}</span>
                   </p>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Placa</p>
-                  <p className="text-sm text-slate-900 font-mono uppercase">{selectedBus.plate}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tipo</p>
-                  <p className="text-sm text-slate-900">{getTypeLabel(selectedBus.type)}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Assentos</p>
-                  <p className="text-sm text-slate-900">{selectedBus.totalSeats}</p>
                 </div>
               </div>
 
               <div className="space-y-2 border-t border-slate-200 pt-6 text-xs text-slate-500">
-                <p>Criado em: {new Date(selectedBus.createdAt).toLocaleDateString("pt-BR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
-                <p>Última atualização: {new Date(selectedBus.updatedAt).toLocaleDateString("pt-BR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
+                <p>Criado em: {new Date(selectedUser.createdAt).toLocaleDateString("pt-BR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
+                <p>Última atualização: {new Date(selectedUser.updatedAt).toLocaleDateString("pt-BR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
               </div>
             </div>
           )}
@@ -277,7 +282,7 @@ const BusesList = () => {
             <Button
               onClick={() => {
                 setOpenDetailsDialog(false);
-                handleEditClick(selectedBus!);
+                handleEditClick(selectedUser!);
               }}
             >
               <Icon name="edit" size={16} className="mr-2" />
@@ -290,4 +295,4 @@ const BusesList = () => {
   );
 };
 
-export default BusesList;
+export default UsersList;

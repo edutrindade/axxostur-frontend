@@ -11,6 +11,7 @@ import CustomersList from "@/pages/admin/CustomersList";
 import TravelersList from "@/pages/admin/TravelersList";
 import BusesList from "@/pages/admin/BusesList";
 import HotelsList from "@/pages/admin/HotelsList";
+import UsersList from "@/pages/admin/UsersList";
 import PackagesTrips from "@/pages/admin/PackagesTrips";
 import POS from "@/pages/admin/POS";
 import Financial from "@/pages/admin/Financial";
@@ -82,6 +83,15 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <HotelsList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="registrations/users"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <UsersList />
               </ProtectedRoute>
             }
           />
