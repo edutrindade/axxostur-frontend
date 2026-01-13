@@ -2,9 +2,8 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CustomerFormDialog } from "@/components/CustomerFormDialog";
-import { CustomPagination } from "@/components/CustomPagination";
+import { DataTable, type ColumnDef, type TableAction } from "@/components/DataTable";
 import { useAuth } from "@/hooks/useAuth";
 import { useCustomersByCompanyQuery } from "@/hooks/useCustomersQuery";
 import { useCreateCustomerMutation, useUpdateCustomerMutation, useDeleteCustomerMutation } from "@/hooks/useCustomersMutations";
@@ -34,12 +33,6 @@ const CustomersList = () => {
     setSearch(searchInput);
     setPage(1);
   }, [searchInput]);
-
-  const handleClearSearch = useCallback(() => {
-    setSearchInput("");
-    setSearch("");
-    setPage(1);
-  }, []);
 
   const handleCreateClick = () => {
     setSelectedCustomer(undefined);
@@ -80,6 +73,64 @@ const CustomersList = () => {
     }
     setOpenFormDialog(false);
   };
+
+  const columns: ColumnDef<Customer>[] = [
+    {
+      key: "name",
+      label: "Nome",
+      render: (value) => <span className="font-semibold text-slate-900 text-base">{value}</span>,
+    },
+    {
+      key: "email",
+      label: "Email",
+      render: (value) => (
+        <div className="flex items-center gap-2">
+          <Icon name="mail" size={16} className="text-slate-400 flex-shrink-0" />
+          <span className="text-slate-600">{value || "-"}</span>
+        </div>
+      ),
+    },
+    {
+      key: "phone",
+      label: "Telefone",
+      render: (value) => <span className="text-slate-600">{value ? formatPhone(value) : "-"}</span>,
+    },
+    {
+      key: "cpf",
+      label: "CPF",
+      render: (value) => <span className="text-slate-600 font-mono">{value ? formatCpf(value) : "-"}</span>,
+    },
+    {
+      key: "gender",
+      label: "Gênero",
+      render: (value) => <span className="text-slate-600">{value ? (value === "male" ? "Masculino" : value === "female" ? "Feminino" : "Outro") : "-"}</span>,
+    },
+    {
+      key: "active",
+      label: "Status",
+      render: (value) => (
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+          {value ? "Ativo" : "Inativo"}
+        </span>
+      ),
+    },
+  ];
+
+  const tableActions: TableAction<Customer>[] = [
+    {
+      icon: "edit",
+      label: "Editar",
+      onClick: handleEditClick,
+      variant: "outline",
+      className: "bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100",
+    },
+    {
+      icon: "delete",
+      label: "Remover",
+      onClick: handleDeleteClick,
+      variant: "destructive",
+    },
+  ];
 
   if (isLoadingCustomers) {
     return (
@@ -139,109 +190,18 @@ const CustomersList = () => {
           </div>
         </div>
 
-        {customers.length === 0 ? (
-          <div className="p-12 text-center">
-            <Icon name="users" size={48} className="mx-auto text-slate-300 mb-4" />
-            <p className="text-slate-600 text-lg mb-2">{search ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado"}</p>
-            <p className="text-slate-500">{search ? "Tente fazer uma nova busca" : "Comece adicionando seu primeiro cliente"}</p>
-          </div>
-        ) : (
-          <>
-            <div className="hidden lg:block overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-slate-700 font-semibold">Nome</TableHead>
-                    <TableHead className="text-slate-700 font-semibold">Email</TableHead>
-                    <TableHead className="text-slate-700 font-semibold">Telefone</TableHead>
-                    <TableHead className="text-slate-700 font-semibold">CPF</TableHead>
-                    <TableHead className="text-slate-700 font-semibold">Gênero</TableHead>
-                    <TableHead className="text-slate-700 font-semibold">Status</TableHead>
-                    <TableHead className="text-slate-700 font-semibold text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {customers.map((customer) => (
-                    <TableRow key={customer.id} className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer" onClick={() => handleRowClick(customer)}>
-                      <TableCell className="font-semibold text-slate-900 text-base">{customer.name}</TableCell>
-                      <TableCell className="text-slate-600">
-                        <div className="flex items-center gap-2">
-                          <Icon name="mail" size={16} className="text-slate-400 flex-shrink-0" />
-                          <span>{customer.email || "-"}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-slate-600">{customer.phone ? formatPhone(customer.phone) : "-"}</TableCell>
-                      <TableCell className="text-slate-600 font-mono">{customer.cpf ? formatCpf(customer.cpf) : "-"}</TableCell>
-                      <TableCell className="text-slate-600">{customer.gender ? (customer.gender === "male" ? "Masculino" : customer.gender === "female" ? "Feminino" : "Outro") : "-"}</TableCell>
-                      <TableCell>
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${customer.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{customer.active ? "Ativo" : "Inativo"}</span>
-                      </TableCell>
-                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-end gap-2">
-                          <Button onClick={() => handleEditClick(customer)} size="sm" variant="outline" className="bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100">
-                            <Icon name="edit" size={16} />
-                          </Button>
-                          <Button onClick={() => handleDeleteClick(customer)} size="sm" className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 border">
-                            <Icon name="delete" size={16} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            <div className="lg:hidden px-4 space-y-4 pb-4">
-              {customers.map((customer) => (
-                <div key={customer.id} className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleRowClick(customer)}>
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900 text-lg">{customer.name}</h3>
-                        <p className="text-sm text-slate-600 mt-1">{customer.email || "-"}</p>
-                      </div>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ml-2 ${customer.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{customer.active ? "Ativo" : "Inativo"}</span>
-                    </div>
-
-                    {(customer.phone || customer.cpf || customer.gender) && (
-                      <div className="text-sm text-slate-600 space-y-1">
-                        {customer.phone && <p>Telefone: {formatPhone(customer.phone)}</p>}
-                        {customer.cpf && <p>CPF: {formatCpf(customer.cpf)}</p>}
-                        {customer.gender && <p>Gênero: {customer.gender === "male" ? "Masculino" : customer.gender === "female" ? "Feminino" : "Outro"}</p>}
-                      </div>
-                    )}
-
-                    {customer.notes && <p className="text-sm text-slate-600 line-clamp-2">{customer.notes}</p>}
-
-                    <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
-                      <Button onClick={() => handleEditClick(customer)} size="sm" variant="outline" className="flex-1">
-                        <Icon name="edit" size={16} className="mr-1" />
-                        Editar
-                      </Button>
-                      <Button onClick={() => handleDeleteClick(customer)} size="sm" variant="destructive" className="flex-1">
-                        <Icon name="delete" size={16} className="mr-1" />
-                        Remover
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t border-slate-200 p-6">
-              {pagination && (
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-slate-600">
-                    Mostrando <span className="font-semibold">{(pagination.page - 1) * pagination.limit + 1}</span> a <span className="font-semibold">{Math.min(pagination.page * pagination.limit, pagination.total)}</span> de{" "}
-                    <span className="font-semibold">{pagination.total}</span> clientes
-                  </p>
-                  <CustomPagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={setPage} hasNextPage={pagination.hasNextPage} hasPreviousPage={pagination.hasPreviousPage} disabled={isLoadingCustomers} />
-                </div>
-              )}
-            </div>
-          </>
-        )}
+        <DataTable
+          data={customers}
+          columns={columns}
+          actions={tableActions}
+          pagination={pagination}
+          onPageChange={setPage}
+          onRowClick={handleRowClick}
+          isLoading={isLoadingCustomers}
+          emptyIcon="users"
+          emptyTitle={search ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado"}
+          emptyDescription={search ? "Tente fazer uma nova busca" : "Comece adicionando seu primeiro cliente"}
+        />
       </div>
 
       <CustomerFormDialog

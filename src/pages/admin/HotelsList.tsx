@@ -2,9 +2,8 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { HotelFormDialog } from "@/components/HotelFormDialog";
-import { CustomPagination } from "@/components/CustomPagination";
+import { DataTable, type ColumnDef, type TableAction } from "@/components/DataTable";
 import { useAuth } from "@/hooks/useAuth";
 import { useHotelsByCompanyQuery } from "@/hooks/useHotelsQuery";
 import { useCreateHotelMutation, useUpdateHotelMutation, useDeleteHotelMutation } from "@/hooks/useHotelsMutations";
@@ -75,6 +74,61 @@ const HotelsList = () => {
     setOpenFormDialog(false);
   };
 
+  const columns: ColumnDef<Hotel>[] = [
+    {
+      key: "name",
+      label: "Nome",
+      render: (value) => <span className="font-medium text-slate-900">{value}</span>,
+    },
+    {
+      key: "stars",
+      label: "Classificação",
+      render: (_value, hotel) =>
+        hotel.stars && (
+          <span className="inline-flex items-center gap-1">
+            {Array.from({ length: hotel.stars }).map((_, i) => (
+              <Icon key={i} name="star" size={14} className="fill-yellow-400 text-yellow-400" />
+            ))}
+          </span>
+        ),
+    },
+    {
+      key: "totalRooms",
+      label: "Quartos",
+      render: (value) => <span className="text-slate-600">{value || "-"}</span>,
+    },
+    {
+      key: "phone",
+      label: "Contato",
+      render: (_value, hotel) => (
+        <div className="text-sm">
+          {hotel.phone && <p>{formatPhone(hotel.phone)}</p>}
+          {hotel.email && <p className="text-xs text-slate-500">{hotel.email}</p>}
+        </div>
+      ),
+    },
+    {
+      key: "active",
+      label: "Status",
+      render: (value) => <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{value ? "Ativo" : "Inativo"}</span>,
+    },
+  ];
+
+  const tableActions: TableAction<Hotel>[] = [
+    {
+      icon: "edit",
+      label: "Editar",
+      onClick: handleEditClick,
+      variant: "outline",
+    },
+    {
+      icon: "delete",
+      label: "Remover",
+      onClick: handleDeleteClick,
+      variant: "destructive",
+    },
+  ];
+
   if (isLoadingHotels) {
     return (
       <div className="space-y-6">
@@ -108,133 +162,38 @@ const HotelsList = () => {
         </Button>
       </div>
 
-      <Input
-        placeholder="Pesquisar hotel por nome..."
-        value={nameInput}
-        onChange={(e) => setNameInput(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleSearch();
-          }
-        }}
-        disabled={isLoadingHotels}
-      />
-
-      {!hotels || hotels.length === 0 ? (
-        <div className="bg-white rounded-lg border border-slate-200 p-12 text-center">
-          <Icon name="building" size={48} className="mx-auto text-slate-300 mb-4" />
-          <p className="text-slate-600 text-lg mb-2">{name ? "Nenhum hotel encontrado com esse nome" : "Nenhum hotel cadastrado"}</p>
-          <p className="text-slate-500">{name ? "Tente fazer uma nova busca" : "Comece adicionando seu primeiro hotel"}</p>
+      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-slate-200">
+          <div className="flex items-center gap-2 flex-1 bg-slate-50 rounded-lg px-3 py-0.5 border border-slate-200">
+            <Icon name="search" size={18} className="text-blue-500 flex-shrink-0" />
+            <Input
+              placeholder="Pesquisar hotel por nome..."
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearch();
+                }
+              }}
+              disabled={isLoadingHotels}
+              className="border-0 bg-transparent focus:bg-transparent focus-visible:ring-0 shadow-none h-auto text-sm"
+            />
+          </div>
         </div>
-      ) : (
-        <>
-          <div className="hidden lg:block bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
-            <Table>
-              <TableHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-slate-700 font-semibold">Nome</TableHead>
-                  <TableHead className="text-slate-700 font-semibold">Classificação</TableHead>
-                  <TableHead className="text-slate-700 font-semibold">Quartos</TableHead>
-                  <TableHead className="text-slate-700 font-semibold">Contato</TableHead>
-                  <TableHead className="text-slate-700 font-semibold">Status</TableHead>
-                  <TableHead className="text-slate-700 font-semibold text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {hotels.map((hotel) => (
-                  <TableRow key={hotel.id} className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer" onClick={() => handleRowClick(hotel)}>
-                    <TableCell className="font-medium text-slate-900">{hotel.name}</TableCell>
-                    <TableCell className="text-slate-600">
-                      {hotel.stars && (
-                        <span className="inline-flex items-center gap-1">
-                          {Array.from({ length: hotel.stars }).map((_, i) => (
-                            <Icon key={i} name="star" size={14} className="fill-yellow-400 text-yellow-400" />
-                          ))}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-slate-600">{hotel.totalRooms || "-"}</TableCell>
-                    <TableCell className="text-slate-600">
-                      {hotel.phone || hotel.email ? (
-                        <div className="text-sm">
-                          {hotel.phone && <p>{formatPhone(hotel.phone)}</p>}
-                          {hotel.email && <p className="text-xs text-slate-500">{hotel.email}</p>}
-                        </div>
-                      ) : (
-                        "-"
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${hotel.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{hotel.active ? "Ativo" : "Inativo"}</span>
-                    </TableCell>
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end gap-2">
-                        <Button onClick={() => handleEditClick(hotel)} size="sm" variant="outline">
-                          <Icon name="edit" size={16} />
-                        </Button>
-                        <Button onClick={() => handleDeleteClick(hotel)} size="sm" variant="destructive">
-                          <Icon name="delete" size={16} />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            <div className="border-t border-slate-200 p-4">
-              {pagination && <CustomPagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={setPage} hasNextPage={pagination.hasNextPage} hasPreviousPage={pagination.hasPreviousPage} disabled={isLoadingHotels} />}
-            </div>
-          </div>
 
-          <div className="lg:hidden space-y-4">
-            {hotels.map((hotel) => (
-              <div key={hotel.id} className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleRowClick(hotel)}>
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-slate-900 text-lg">{hotel.name}</h3>
-                      {hotel.stars && (
-                        <div className="flex items-center gap-1 mt-1">
-                          {Array.from({ length: hotel.stars }).map((_, i) => (
-                            <Icon key={i} name="star" size={14} className="fill-yellow-400 text-yellow-400" />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ml-2 ${hotel.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{hotel.active ? "Ativo" : "Inativo"}</span>
-                  </div>
-
-                  {(hotel.totalRooms || hotel.phone || hotel.email) && (
-                    <div className="text-sm text-slate-600 space-y-1">
-                      {hotel.totalRooms && <p>Quartos: {hotel.totalRooms}</p>}
-                      {hotel.phone && <p>{formatPhone(hotel.phone)}</p>}
-                      {hotel.email && <p>{hotel.email}</p>}
-                    </div>
-                  )}
-
-                  {hotel.description && <p className="text-sm text-slate-600 line-clamp-2">{hotel.description}</p>}
-
-                  <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
-                    <Button onClick={() => handleEditClick(hotel)} size="sm" variant="outline" className="flex-1">
-                      <Icon name="edit" size={16} className="mr-1" />
-                      Editar
-                    </Button>
-                    <Button onClick={() => handleDeleteClick(hotel)} size="sm" variant="destructive" className="flex-1">
-                      <Icon name="delete" size={16} className="mr-1" />
-                      Remover
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {pagination && (
-              <div className="bg-white rounded-lg border border-slate-200 p-4">
-                <CustomPagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={setPage} hasNextPage={pagination.hasNextPage} hasPreviousPage={pagination.hasPreviousPage} disabled={isLoadingHotels} />
-              </div>
-            )}
-          </div>
-        </>
-      )}
+        <DataTable
+          data={hotels}
+          columns={columns}
+          actions={tableActions}
+          pagination={pagination}
+          onPageChange={setPage}
+          onRowClick={handleRowClick}
+          isLoading={isLoadingHotels}
+          emptyIcon="building"
+          emptyTitle={name ? "Nenhum hotel encontrado com esse nome" : "Nenhum hotel cadastrado"}
+          emptyDescription={name ? "Tente fazer uma nova busca" : "Comece adicionando seu primeiro hotel"}
+        />
+      </div>
 
       <HotelFormDialog
         open={openFormDialog}
