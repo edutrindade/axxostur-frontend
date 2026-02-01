@@ -40,7 +40,7 @@ export const createBus = async (data: CreateBusRequest): Promise<Bus> => {
 };
 
 export const updateBus = async (id: string, data: UpdateBusRequest): Promise<Bus> => {
-  const response = await api.put<Bus>(`/buses/${id}`, data);
+  const response = await api.patch<Bus>(`/buses/${id}`, data);
   return response.data;
 };
 

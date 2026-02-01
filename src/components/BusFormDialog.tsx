@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,21 +39,25 @@ export const BusFormDialog = ({ open, onOpenChange, onSubmit, isLoading, bus, ti
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { control, handleSubmit, reset, setValue } = useForm<CreateBusFormData | UpdateBusFormData>({
-    defaultValues: bus
-      ? {
-          name: bus.name,
-          plate: bus.plate,
-          totalSeats: bus.totalSeats,
-          type: bus.type,
-        }
-      : {
-          name: "",
-          plate: "",
-          totalSeats: 45,
-          type: "conventional",
-          companyId,
-        },
+    defaultValues: {
+      name: "",
+      plate: "",
+      totalSeats: 45,
+      type: "conventional",
+      companyId,
+    },
   });
+
+  useEffect(() => {
+    if (open && bus) {
+      setValue("name", bus.name);
+      setValue("plate", bus.plate);
+      setValue("totalSeats", bus.totalSeats);
+      setValue("type", bus.type);
+    } else if (open && !bus) {
+      reset();
+    }
+  }, [open, bus, setValue, reset]);
 
   const handlePlateChange = (value: string) => {
     const formatted = formatPlate(value);

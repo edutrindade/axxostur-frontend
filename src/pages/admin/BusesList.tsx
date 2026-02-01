@@ -175,6 +175,7 @@ const BusesList = () => {
                   }
                 }}
                 disabled={isLoadingBuses}
+                isSearch={true}
                 className="border-0 bg-transparent focus:bg-transparent focus-visible:ring-0 shadow-none h-full text-sm placeholder-slate-400"
               />
             </div>

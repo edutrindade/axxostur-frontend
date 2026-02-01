@@ -26,7 +26,7 @@ export const createUser = async (user: CreateUserRequest): Promise<any> => {
 };
 
 export const updateUser = async (id: string, user: UpdateUserRequest): Promise<any> => {
-  const { data } = await api.put(`/users/${id}`, user);
+  const { data } = await api.patch(`/users/${id}`, user);
   return data;
 };
 

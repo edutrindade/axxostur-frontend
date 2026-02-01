@@ -120,6 +120,7 @@ const HotelsList = () => {
       label: "Editar",
       onClick: handleEditClick,
       variant: "outline",
+      className: "bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100",
     },
     {
       icon: "delete",

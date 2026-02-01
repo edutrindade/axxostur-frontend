@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUsersListQuery } from "@/hooks/useUsersQuery";
 import { useCreateUserMutation, useUpdateUserMutation, useDeleteUserMutation } from "@/hooks/useUsersMutations";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { formatPhone } from "@/utils/format";
 import type { User, CreateUserFormData, UpdateUserFormData } from "@/types/user";
 
 const UsersList = () => {
@@ -96,7 +97,7 @@ const UsersList = () => {
     {
       key: "phone",
       label: "Telefone",
-      render: (value) => <span className="text-slate-600">{value}</span>,
+      render: (value) => <span className="text-slate-600">{value ? formatPhone(value) : "-"}</span>,
     },
     {
       key: "role",
@@ -174,6 +175,7 @@ const UsersList = () => {
                   }
                 }}
                 disabled={isLoadingUsers}
+                isSearch={true}
                 className="border-0 bg-transparent focus:bg-transparent focus-visible:ring-0 shadow-none h-full text-sm placeholder-slate-400"
               />
             </div>
@@ -247,7 +249,7 @@ const UsersList = () => {
 
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Telefone</p>
-                  <p className="text-sm text-slate-900">{selectedUser.phone}</p>
+                  <p className="text-sm text-slate-900">{selectedUser.phone ? formatPhone(selectedUser.phone) : "-"}</p>
                 </div>
 
                 <div className="space-y-2">

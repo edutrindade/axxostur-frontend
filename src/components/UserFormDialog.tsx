@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,24 +52,28 @@ export const UserFormDialog = ({ open, onOpenChange, onSubmit, isLoading, user, 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { control, handleSubmit, reset, setValue } = useForm<CreateUserFormData | UpdateUserFormData>({
-    defaultValues: user
-      ? {
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          cpf: user.cpf,
-          role: user.role,
-          companyId: user.companyId || undefined,
-        }
-      : {
-          name: "",
-          email: "",
-          phone: "",
-          cpf: "",
-          role: "attendant",
-          companyId,
-        },
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      cpf: "",
+      role: "attendant",
+      companyId,
+    },
   });
+
+  useEffect(() => {
+    if (open && user) {
+      setValue("name", user.name);
+      setValue("email", user.email);
+      setValue("phone", user.phone ? formatPhone(user.phone) : "");
+      setValue("cpf", user.cpf ? formatCPF(user.cpf) : "");
+      setValue("role", user.role);
+      setValue("companyId", user.companyId || undefined);
+    } else if (open && !user) {
+      reset();
+    }
+  }, [open, user, setValue, reset, companyId]);
 
   const handleCPFChange = (value: string) => {
     const formatted = formatCPF(value);
