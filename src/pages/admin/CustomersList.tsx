@@ -108,11 +108,7 @@ const CustomersList = () => {
     {
       key: "active",
       label: "Status",
-      render: (value) => (
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-          {value ? "Ativo" : "Inativo"}
-        </span>
-      ),
+      render: (value) => <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{value ? "Ativo" : "Inativo"}</span>,
     },
   ];
 
@@ -166,10 +162,10 @@ const CustomersList = () => {
       </div>
 
       <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-4 border-b border-slate-200">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 flex-1 bg-slate-50 rounded-lg px-3 py-0.5 border border-slate-200">
-              <Icon name="search" size={18} className="text-blue-500 flex-shrink-0" />
+        <div className="p-4 border-b border-slate-100">
+          <div className="flex items-center gap-3 h-10">
+            <div className="flex items-center gap-2 flex-1 bg-white rounded-md px-3 border border-slate-200 transition-all duration-200 hover:border-slate-300 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400">
+              <Icon name="search" size={18} className="text-slate-400 flex-shrink-0" />
               <Input
                 placeholder="Buscar por nome ou CPF..."
                 value={searchInput}
@@ -180,10 +176,10 @@ const CustomersList = () => {
                   }
                 }}
                 disabled={isLoadingCustomers}
-                className="border-0 bg-transparent focus:bg-transparent focus-visible:ring-0 shadow-none h-auto text-sm"
+                className="border-0 bg-transparent focus:bg-transparent focus-visible:ring-0 shadow-none h-full text-sm placeholder-slate-400"
               />
             </div>
-            <Button size="default" variant="outline" className="flex-shrink-0">
+            <Button size="sm" variant="outline" className="flex-shrink-0 h-full px-4">
               <Icon name="download" size={16} className="mr-2" />
               Exportar
             </Button>

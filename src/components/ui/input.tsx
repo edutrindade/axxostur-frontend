@@ -127,8 +127,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className
         data-slot="input"
         maxLength={getMaxLength(mask)}
         className={cn(
-          "flex h-12 w-full rounded-lg border-2 border-slate-200 bg-white px-3 py-2.5 text-base text-slate-700 placeholder:text-slate-400 transition-all duration-200 outline-none shadow-sm",
-          "focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-white focus:shadow-md",
+          "flex h-12 w-full rounded-lg bg-transparent px-3 py-2.5 text-base text-slate-700 placeholder:text-slate-400 transition-all duration-200 outline-none shadow-sm",
+          "focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:bg-transparent",
           "hover:border-slate-300 hover:shadow-sm",
           "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50",
           "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-slate-700",
