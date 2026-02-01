@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { Button } from "./button";
 import { Input } from "./input";
 
 interface ColorPickerProps {
@@ -28,7 +27,6 @@ export const ColorPicker = ({ value, onChange, disabled = false, label }: ColorP
   const [isOpen, setIsOpen] = useState(false);
   const [displayValue, setDisplayValue] = useState(value);
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setDisplayValue(value);
