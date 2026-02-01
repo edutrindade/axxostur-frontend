@@ -75,9 +75,9 @@ export function DataTable<T extends { id: string }>({
 
   return (
     <>
-      <div className="hidden lg:block bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+      <div className="hidden lg:block bg-white border border-slate-200 overflow-hidden shadow-sm">
         <Table>
-          <TableHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
+          <TableHeader className="bg-gradient-to-r from-slate-50 to-slate-100">
             <TableRow className="hover:bg-transparent">
               {columns.map((column) => (
                 <TableHead key={String(column.key)} className="text-slate-700 font-semibold">
@@ -120,7 +120,7 @@ export function DataTable<T extends { id: string }>({
 
       <div className="lg:hidden space-y-4">
         {data.map((item) => (
-          <div key={item.id} className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleRowClick(item)}>
+          <div key={item.id} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleRowClick(item)}>
             <div className="space-y-3">
               <div className="flex flex-col gap-3">
                 {columns.slice(0, 2).map((column) => (
@@ -156,7 +156,7 @@ export function DataTable<T extends { id: string }>({
         ))}
 
         {pagination && onPageChange && (
-          <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="bg-white rounded-lg p-4">
             <CustomPagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={onPageChange} hasNextPage={pagination.hasNextPage} hasPreviousPage={pagination.hasPreviousPage} disabled={isLoading} />
           </div>
         )}

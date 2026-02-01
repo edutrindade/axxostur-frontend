@@ -163,7 +163,7 @@ const HotelsList = () => {
       </div>
 
       <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-4 border-b border-slate-100">
+        <div className="p-4">
           <div className="flex items-center gap-3 h-10">
             <div className="flex items-center gap-2 flex-1 bg-white rounded-md px-3 border border-slate-200 transition-all duration-200 hover:border-slate-300 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400">
               <Icon name="search" size={18} className="text-slate-400 flex-shrink-0" />
