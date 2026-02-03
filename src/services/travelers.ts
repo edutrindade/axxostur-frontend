@@ -11,8 +11,10 @@ export const getTravelerByCode = async (code: string, companyId: string): Promis
   return response.data;
 };
 
-export const getTravelersByCompany = async (companyId: string): Promise<TravelersListResponse> => {
-  const response = await api.get<TravelersListResponse>(`/travelers/company/${companyId}`);
+export const getTravelersByCompany = async (companyId: string, page: number = 1, limit: number = 20, search?: string): Promise<TravelersListResponse> => {
+  const response = await api.get<TravelersListResponse>(`/travelers/company/${companyId}`, {
+    params: { page, limit, ...(search && { search }) },
+  });
   return response.data;
 };
 

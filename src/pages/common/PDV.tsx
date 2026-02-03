@@ -1,17 +1,19 @@
-import { useState, useMemo, useEffect } from "react";
-import { Plus, Minus, DollarSign, Percent, Tag, AlertCircle, Trash2, UsersRound } from "lucide-react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { Plus, Minus, DollarSign, Percent, Tag, AlertCircle, Trash2, UsersRound, PlusIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/hooks/useAuth";
 import { useCustomersByCompanyQuery } from "@/hooks/useCustomersQuery";
 import { usePackageTripsQuery } from "@/hooks/usePackageTripsQuery";
 import { useCreateSaleMutation, useUpdateSaleMutation, useCreateSaleTravelerMutation } from "@/hooks/useSalesMutations";
 import { SeatSelectionDialog } from "@/components/SeatSelectionDialog";
-import { formatPrice, formatDate, formatPhone } from "@/utils/format";
+import { formatCpf, formatPrice, formatPhone } from "@/utils/format";
 import { getCustomerByCode } from "@/services/customers";
 import { getPackageTripByCode } from "@/services/packageTrips";
 import { createTraveler, getTravelersByCompany, updateTraveler } from "@/services/travelers";
@@ -21,13 +23,23 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { TravelerFormDialog } from "@/components/TravelerFormDialog";
 import { TravelersDialog } from "@/components/TravelersDialog";
 import { TravelersListDialog } from "@/components/TravelersListDialog";
-import type { Traveler } from "@/types/traveler";
+import type { Traveler, PaginationData } from "@/types/traveler";
 
 interface SaleTravelerTemp {
   id: string;
   name: string;
   seatNumber: number;
 }
+
+interface ServiceCartItem {
+  id: string;
+  packageTripId: string;
+  quantity: number;
+  saleTravelers: SaleTravelerTemp[];
+  selectedTravelers: Traveler[];
+}
+
+const TRAVELERS_PAGE_SIZE = 10;
 
 const PDV = () => {
   const { company, user } = useAuth();
@@ -40,14 +52,13 @@ const PDV = () => {
   const [paymentMethod, setPaymentMethod] = useState<string>("credit_card");
   const [installments, setInstallments] = useState<number>(1);
   const [interestRate, setInterestRate] = useState<number>(0);
-  const [quantity, setQuantity] = useState<number>(1);
-  const [saleTravelers, setSaleTravelers] = useState<SaleTravelerTemp[]>([]);
+  const [serviceItems, setServiceItems] = useState<ServiceCartItem[]>([]);
+  const [activeServiceItemId, setActiveServiceItemId] = useState<string>("");
   const [seatDialogOpen, setSeatDialogOpen] = useState(false);
   const [travelerDialogOpen, setTravelerDialogOpen] = useState(false);
   const [travelerListDialogOpen, setTravelerListDialogOpen] = useState(false);
   const [travelerCreateDialogOpen, setTravelerCreateDialogOpen] = useState(false);
   const [travelerSnapshot, setTravelerSnapshot] = useState<Traveler | null>(null);
-  const [selectedTravelers, setSelectedTravelers] = useState<Traveler[]>([]);
   const [editingTravelerId, setEditingTravelerId] = useState<string>("");
   const [editingTravelerForm, setEditingTravelerForm] = useState({
     name: "",
@@ -61,6 +72,10 @@ const PDV = () => {
   });
   const [travelersList, setTravelersList] = useState<Traveler[]>([]);
   const [travelersLoading, setTravelersLoading] = useState(false);
+  const [travelersPage, setTravelersPage] = useState(1);
+  const [travelersPagination, setTravelersPagination] = useState<PaginationData | null>(null);
+  const [travelersFilterField, setTravelersFilterField] = useState<"name" | "cpf">("name");
+  const [travelersFilterValue, setTravelersFilterValue] = useState("");
   const [seatSelectionTraveler, setSeatSelectionTraveler] = useState<Traveler | null>(null);
   const [travelerCreateError, setTravelerCreateError] = useState<string>("");
   const [travelerCreateSaving, setTravelerCreateSaving] = useState(false);
@@ -85,6 +100,11 @@ const PDV = () => {
   const [saleType, setSaleType] = useState<string>("sell");
   const [sellerId, setSellerId] = useState<string>(user?.id || "");
   const [saleDate, setSaleDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [duplicateServiceDialogOpen, setDuplicateServiceDialogOpen] = useState(false);
+  const [pendingServiceId, setPendingServiceId] = useState<string>("");
+
+  const customerCodeInputRef = useRef<HTMLInputElement | null>(null);
+  const serviceCodeInputRef = useRef<HTMLInputElement | null>(null);
 
   const { data: customersResponse } = useCustomersByCompanyQuery(company?.id || "", 1, 1000);
   const { data: packageTripsResponse } = usePackageTripsQuery(1, 1000, company?.id);
@@ -98,12 +118,27 @@ const PDV = () => {
   const packageTrips = packageTripsResponse?.data || [];
   const users = usersResponse?.data || [];
 
-  const selectedCustomerData = customers.find((c) => c.id === selectedCustomer);
-  const selectedPackageTripData = packageTrips.find((p) => p.id === selectedPackageTrip);
+  const packageTripsById = useMemo(() => new Map(packageTrips.map((trip) => [trip.id, trip])), [packageTrips]);
+  const activeServiceItem = serviceItems.find((item) => item.id === activeServiceItemId);
+  const activeServiceTrip = activeServiceItem ? packageTripsById.get(activeServiceItem.packageTripId) : undefined;
+  const primaryServiceItem = serviceItems[0];
+  const primarySaleTravelers = primaryServiceItem?.saleTravelers || [];
 
-  const baseValue = selectedPackageTripData ? Number(selectedPackageTripData.price) : 0;
+  const subtotal = useMemo(() => {
+    return serviceItems.reduce((sum, item) => {
+      const trip = packageTripsById.get(item.packageTripId);
+      if (!trip) {
+        return sum;
+      }
+      return sum + Number(trip.price) * item.quantity;
+    }, 0);
+  }, [serviceItems, packageTripsById]);
 
-  const subtotal = baseValue * quantity;
+  const totalQuantity = useMemo(() => {
+    return serviceItems.reduce((sum, item) => sum + item.quantity, 0);
+  }, [serviceItems]);
+
+  const baseValue = totalQuantity > 0 ? subtotal / totalQuantity : 0;
 
   const discountValue = useMemo(() => {
     if (discountType === "percent") {
@@ -122,7 +157,7 @@ const PDV = () => {
   const finalValue = Math.max(0, subtotal - discountValue + additionValue);
   const installmentValue = finalValue / Math.max(1, installments);
 
-  const occupiedSeats = saleTravelers.map((t) => t.seatNumber);
+  const occupiedSeats = activeServiceItem?.saleTravelers.map((t) => t.seatNumber) || [];
 
   const sellers = useMemo(() => {
     return users.filter((seller) => {
@@ -144,12 +179,29 @@ const PDV = () => {
     }
   }, [sellerId, user?.id]);
 
+  useEffect(() => {
+    customerCodeInputRef.current?.focus();
+  }, []);
+
   const validateEmail = (value: string) => {
     if (!value) {
       return true;
     }
 
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  };
+
+  const formatServiceDate = (value: string) => {
+    if (!value) {
+      return "-";
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return value;
+    }
+
+    return parsed.toLocaleDateString("pt-BR");
   };
 
   const resetEditingTraveler = () => {
@@ -187,15 +239,72 @@ const PDV = () => {
     }
 
     setTravelersLoading(true);
-    getTravelersByCompany(company.id)
-      .then((response) => setTravelersList(response.data || []))
+    const normalizedSearch = travelersFilterValue.trim();
+    const searchValue = normalizedSearch ? (travelersFilterField === "cpf" ? normalizedSearch.replace(/\D/g, "") : normalizedSearch) : "";
+
+    getTravelersByCompany(company.id, travelersPage, TRAVELERS_PAGE_SIZE, searchValue || undefined)
+      .then((response) => {
+        setTravelersList(response.data || []);
+        setTravelersPagination(response.pagination ?? null);
+      })
       .catch((error) => console.error("Erro ao carregar viajantes:", error))
       .finally(() => setTravelersLoading(false));
-  }, [travelerListDialogOpen, company?.id]);
+  }, [travelerListDialogOpen, company?.id, travelersFilterField, travelersFilterValue, travelersPage]);
 
-  const handleOpenTravelerDialog = () => {
+  const handleTravelerFilterFieldChange = (value: "name" | "cpf") => {
+    setTravelersFilterField(value);
+    setTravelersPage(1);
+  };
+
+  const handleTravelerFilterValueChange = (value: string) => {
+    setTravelersFilterValue(value);
+    setTravelersPage(1);
+  };
+
+  const handleTravelersPageChange = (page: number) => {
+    setTravelersPage(page);
+  };
+
+  const handleOpenTravelerDialog = (serviceItemId: string) => {
     resetEditingTraveler();
+    setActiveServiceItemId(serviceItemId);
     setTravelerDialogOpen(true);
+  };
+
+  const clearServiceInputs = () => {
+    setSelectedPackageTrip("");
+    setServiceCodeInput("");
+    setServiceCodeError("");
+    requestAnimationFrame(() => serviceCodeInputRef.current?.focus());
+  };
+
+  const addServiceToCart = (packageTripId: string) => {
+    const newItem: ServiceCartItem = {
+      id: `${packageTripId}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      packageTripId,
+      quantity: 1,
+      saleTravelers: [],
+      selectedTravelers: [],
+    };
+
+    setServiceItems((prev) => [...prev, newItem]);
+    setActiveServiceItemId(newItem.id);
+    clearServiceInputs();
+  };
+
+  const handleAddService = () => {
+    if (!selectedPackageTrip) {
+      return;
+    }
+
+    const hasSameService = serviceItems.some((item) => item.packageTripId === selectedPackageTrip);
+    if (hasSameService) {
+      setPendingServiceId(selectedPackageTrip);
+      setDuplicateServiceDialogOpen(true);
+      return;
+    }
+
+    addServiceToCart(selectedPackageTrip);
   };
 
   const handleSearchCustomerByCode = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -300,7 +409,12 @@ const PDV = () => {
       });
       setTravelerSnapshot(updated);
       setTravelersList((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
-      setSelectedTravelers((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+      setServiceItems((prev) =>
+        prev.map((item) => ({
+          ...item,
+          selectedTravelers: item.selectedTravelers.map((traveler) => (traveler.id === updated.id ? updated : traveler)),
+        })),
+      );
     } catch (error) {
       console.error("Erro ao atualizar viajante:", error);
     }
@@ -334,9 +448,28 @@ const PDV = () => {
         notes: travelerCreateForm.notes || undefined,
       });
       setTravelersList((prev) => [traveler, ...prev]);
+      if (activeServiceItemId) {
+        setServiceItems((prev) =>
+          prev.map((item) => {
+            if (item.id !== activeServiceItemId) {
+              return item;
+            }
+            const alreadySelected = item.selectedTravelers.some((selected) => {
+              if (selected.companyId === traveler.companyId && selected.code !== undefined && selected.code !== null && traveler.code !== undefined && traveler.code !== null) {
+                return String(selected.code) === String(traveler.code);
+              }
+              return selected.id === traveler.id;
+            });
+            return {
+              ...item,
+              selectedTravelers: alreadySelected ? item.selectedTravelers : [traveler, ...item.selectedTravelers],
+            };
+          }),
+        );
+      }
+      toast.success("Viajante cadastrado com sucesso!");
       resetCreateTraveler();
       setTravelerCreateDialogOpen(false);
-      setTravelerListDialogOpen(true);
     } catch (error) {
       console.error("Erro ao cadastrar viajante:", error);
       setTravelerCreateError("Erro ao cadastrar viajante");
@@ -346,37 +479,41 @@ const PDV = () => {
   };
 
   const handleSeatSelected = (seatNumber: number) => {
-    if (!seatSelectionTraveler) {
+    if (!seatSelectionTraveler || !activeServiceItemId) {
       return;
     }
 
-    setSaleTravelers((prev) => {
-      if (prev.some((item) => item.id === seatSelectionTraveler.id)) {
-        return prev;
-      }
-      return [
-        ...prev,
-        {
-          id: seatSelectionTraveler.id,
-          name: seatSelectionTraveler.name,
-          seatNumber,
-        },
-      ];
-    });
+    setServiceItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== activeServiceItemId) {
+          return item;
+        }
 
-    setSelectedTravelers((prev) => {
-      if (prev.some((item) => item.id === seatSelectionTraveler.id)) {
-        return prev;
-      }
-      return [seatSelectionTraveler, ...prev];
-    });
+        if (item.saleTravelers.some((traveler) => traveler.id === seatSelectionTraveler.id)) {
+          return item;
+        }
+
+        return {
+          ...item,
+          saleTravelers: [
+            ...item.saleTravelers,
+            {
+              id: seatSelectionTraveler.id,
+              name: seatSelectionTraveler.name,
+              seatNumber,
+            },
+          ],
+          selectedTravelers: item.selectedTravelers.some((traveler) => traveler.id === seatSelectionTraveler.id) ? item.selectedTravelers : [seatSelectionTraveler, ...item.selectedTravelers],
+        };
+      }),
+    );
 
     setSeatDialogOpen(false);
     setTravelerListDialogOpen(false);
   };
 
   const handleCreateSale = async () => {
-    if (!selectedCustomer || !selectedPackageTrip || saleTravelers.length === 0 || !sellerId) {
+    if (!selectedCustomer || !primaryServiceItem || primarySaleTravelers.length === 0 || !sellerId) {
       alert("Preencha todos os campos e adicione pelo menos um viajante");
       return;
     }
@@ -388,7 +525,7 @@ const PDV = () => {
         companyId: company?.id || "",
         clientId: selectedCustomer,
         userId: sellerId,
-        packageTripId: selectedPackageTrip,
+        packageTripId: primaryServiceItem.packageTripId,
         status: "reserved",
         totalValue: subtotal,
         discount: discountValue,
@@ -405,7 +542,7 @@ const PDV = () => {
         },
       });
 
-      for (const traveler of saleTravelers) {
+      for (const traveler of primarySaleTravelers) {
         await createSaleTravelerMutation.mutateAsync({
           saleId: saleResponse.id,
           travelerId: traveler.id,
@@ -416,8 +553,7 @@ const PDV = () => {
       setSaleCreated(saleResponse.id);
 
       setSelectedCustomer("");
-      setSelectedPackageTrip("");
-      setQuantity(1);
+      clearServiceInputs();
       setDiscount(0);
       setAddition(0);
       setDiscountType("fixed");
@@ -425,8 +561,8 @@ const PDV = () => {
       setPaymentMethod("credit_card");
       setInstallments(1);
       setInterestRate(0);
-      setSaleTravelers([]);
-      setSelectedTravelers([]);
+      setServiceItems([]);
+      setActiveServiceItemId("");
     } catch (error) {
       console.error("Erro ao criar venda:", error);
       alert("Erro ao criar venda. Tente novamente.");
@@ -502,6 +638,7 @@ const PDV = () => {
                   type="text"
                   inputMode="numeric"
                   placeholder="000"
+                  ref={customerCodeInputRef}
                   value={customerCodeInput}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, "");
@@ -585,6 +722,7 @@ const PDV = () => {
                   id="service-code"
                   type="text"
                   placeholder="000"
+                  ref={serviceCodeInputRef}
                   value={serviceCodeInput}
                   onChange={(e) => {
                     setServiceCodeInput(e.target.value);
@@ -608,7 +746,7 @@ const PDV = () => {
                   value={selectedPackageTrip}
                   onValueChange={(value) => {
                     setSelectedPackageTrip(value);
-                    const service = packageTrips.find((trip) => trip.id === value);
+                    const service = packageTripsById.get(value);
                     setServiceCodeInput(service?.code ? String(service.code).padStart(3, "0") : "");
                   }}
                 >
@@ -618,11 +756,18 @@ const PDV = () => {
                   <SelectContent className="max-h-48">
                     {packageTrips.map((trip) => (
                       <SelectItem key={trip.id} value={trip.id}>
-                        {trip.package?.name} - {formatDate(trip.departureDate)} ({formatPrice(trip.price)})
+                        {trip.package?.name} - {formatServiceDate(trip.departureDate)} ({formatPrice(trip.price)})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="lg:col-span-1 flex items-end">
+                <Button className="w-full h-12" onClick={handleAddService} disabled={isProcessing || serviceCodeLoading || !selectedPackageTrip}>
+                  <PlusIcon size={16} />
+                  Adicionar
+                </Button>
               </div>
             </div>
           </Card>
@@ -650,86 +795,108 @@ const PDV = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {!selectedPackageTripData ? (
+                {serviceItems.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center text-slate-500 py-10">
                       Nenhum serviço selecionado
                     </TableCell>
                   </TableRow>
                 ) : (
-                  <TableRow>
-                    <TableCell className="font-semibold">1</TableCell>
-                    <TableCell className="text-slate-600">{selectedPackageTripData.code !== undefined && selectedPackageTripData.code !== null ? String(selectedPackageTripData.code).padStart(3, "0") : "-"}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {saleTravelers.length < quantity && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-600">
-                                <AlertCircle size={14} />
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>Informe os viajantes</TooltipContent>
-                          </Tooltip>
-                        )}
-                        <div>
-                          <p className="font-semibold text-slate-900">{selectedPackageTripData.package?.name || "Serviço"}</p>
-                          <p className="text-xs text-slate-500">
-                            {formatDate(selectedPackageTripData.departureDate)} • {formatDate(selectedPackageTripData.returnDate)}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="inline-flex items-center gap-2">
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-7 w-7"
-                          onClick={() =>
-                            setQuantity((prev) => {
-                              const nextValue = Math.max(1, prev - 1);
-                              if (saleTravelers.length > nextValue) {
-                                setSaleTravelers((current) => current.slice(0, nextValue));
+                  serviceItems.map((item, index) => {
+                    const trip = packageTripsById.get(item.packageTripId);
+                    const itemPrice = trip ? Number(trip.price) : 0;
+                    const itemTotal = itemPrice * item.quantity;
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-semibold">{index + 1}</TableCell>
+                        <TableCell className="text-slate-600">{trip?.code !== undefined && trip?.code !== null ? String(trip.code).padStart(3, "0") : "-"}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {item.saleTravelers.length < item.quantity && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-600">
+                                    <AlertCircle size={14} />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>Informe os viajantes</TooltipContent>
+                              </Tooltip>
+                            )}
+                            <div>
+                              <p className="font-semibold text-slate-900">{trip?.package?.name || "Serviço"}</p>
+                              <p className="text-xs text-slate-500">
+                                {formatServiceDate(trip?.departureDate || "")} • {formatServiceDate(trip?.returnDate || "")}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="inline-flex items-center gap-2">
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="h-7 w-7"
+                              onClick={() =>
+                                setServiceItems((prev) =>
+                                  prev.map((current) => {
+                                    if (current.id !== item.id) {
+                                      return current;
+                                    }
+                                    const nextValue = Math.max(1, current.quantity - 1);
+                                    const nextTravelers = current.saleTravelers.slice(0, nextValue);
+                                    const nextSelected = current.selectedTravelers.slice(0, nextValue);
+                                    return {
+                                      ...current,
+                                      quantity: nextValue,
+                                      saleTravelers: nextTravelers,
+                                      selectedTravelers: nextSelected,
+                                    };
+                                  }),
+                                )
                               }
-                              return nextValue;
-                            })
-                          }
-                          disabled={quantity <= 1}
-                        >
-                          <Minus size={14} />
-                        </Button>
-                        <span className="min-w-[20px] text-center font-semibold">{quantity}</span>
-                        <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQuantity((prev) => prev + 1)}>
-                          <Plus size={14} />
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">UN</TableCell>
-                    <TableCell className="text-right">{formatPrice(baseValue)}</TableCell>
-                    <TableCell className="text-right">{formatPrice(subtotal)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button size="sm" variant="outline" className="gap-2" onClick={handleOpenTravelerDialog} disabled={!selectedCustomer || !selectedPackageTrip}>
-                          <UsersRound size={16} />
-                          Viajantes
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-red-600 hover:text-red-700"
-                          onClick={() => {
-                            setSelectedPackageTrip("");
-                            setSaleTravelers([]);
-                            setSelectedTravelers([]);
-                            setQuantity(1);
-                          }}
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                              disabled={item.quantity <= 1}
+                            >
+                              <Minus size={14} />
+                            </Button>
+                            <span className="min-w-[20px] text-center font-semibold">{item.quantity}</span>
+                            <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setServiceItems((prev) => prev.map((current) => (current.id === item.id ? { ...current, quantity: current.quantity + 1 } : current)))}>
+                              <Plus size={14} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">UN</TableCell>
+                        <TableCell className="text-right">{formatPrice(itemPrice)}</TableCell>
+                        <TableCell className="text-right">{formatPrice(itemTotal)}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button size="sm" variant="outline" className="gap-2" onClick={() => handleOpenTravelerDialog(item.id)} disabled={!selectedCustomer || !item.packageTripId}>
+                              <UsersRound size={16} />
+                              Viajantes
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => {
+                                setServiceItems((prev) => {
+                                  const nextItems = prev.filter((current) => current.id !== item.id);
+                                  if (activeServiceItemId === item.id) {
+                                    setActiveServiceItemId(nextItems[0]?.id || "");
+                                    setTravelerDialogOpen(false);
+                                    setTravelerListDialogOpen(false);
+                                    setSeatDialogOpen(false);
+                                  }
+                                  return nextItems;
+                                });
+                              }}
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
@@ -748,7 +915,7 @@ const PDV = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600">Quantidade:</span>
-                      <span className="font-semibold">{quantity}</span>
+                      <span className="font-semibold">{totalQuantity}</span>
                     </div>
                     <div className="flex justify-between text-base font-semibold bg-slate-50 p-2 rounded">
                       <span>Subtotal:</span>
@@ -857,7 +1024,7 @@ const PDV = () => {
                 </div>
               </Card>
 
-              <Button className="w-full h-12 text-lg gap-2" disabled={isProcessing || saleTravelers.length === 0 || !selectedCustomer || !selectedPackageTrip} onClick={handleCreateSale}>
+              <Button className="w-full h-12 text-lg gap-2" disabled={isProcessing || serviceItems.length === 0 || primarySaleTravelers.length === 0 || !selectedCustomer} onClick={handleCreateSale}>
                 {isProcessing ? (
                   <>
                     <Icon name="refresh" size={20} className="animate-spin" />
@@ -878,31 +1045,63 @@ const PDV = () => {
       <TravelersDialog
         open={travelerDialogOpen}
         onOpenChange={setTravelerDialogOpen}
-        selectedTravelers={selectedTravelers}
+        selectedTravelers={activeServiceItem?.selectedTravelers || []}
         editingTravelerId={editingTravelerId}
         editingTravelerForm={editingTravelerForm}
         onEditFieldChange={(field, value) => setEditingTravelerForm((prev) => ({ ...prev, [field]: value }))}
         onEditFieldUpdate={handleTravelerFieldUpdate}
         onSelectTraveler={handleSelectTraveler}
         onRemoveTraveler={(travelerId) => {
-          setSelectedTravelers((prev) => prev.filter((item) => item.id !== travelerId));
-          setSaleTravelers((prev) => prev.filter((item) => item.id !== travelerId));
+          if (!activeServiceItemId) {
+            return;
+          }
+          setServiceItems((prev) =>
+            prev.map((item) => {
+              if (item.id !== activeServiceItemId) {
+                return item;
+              }
+              return {
+                ...item,
+                selectedTravelers: item.selectedTravelers.filter((traveler) => traveler.id !== travelerId),
+                saleTravelers: item.saleTravelers.filter((traveler) => traveler.id !== travelerId),
+              };
+            }),
+          );
           if (editingTravelerId === travelerId) {
             resetEditingTraveler();
           }
         }}
         onOpenCreate={() => setTravelerCreateDialogOpen(true)}
-        onOpenList={() => setTravelerListDialogOpen(true)}
-        isListDisabled={!selectedPackageTrip}
+        onOpenList={() => {
+          setTravelersPage(1);
+          setTravelerListDialogOpen(true);
+        }}
+        isListDisabled={!activeServiceItem}
       />
 
       <TravelersListDialog
         open={travelerListDialogOpen}
         onOpenChange={setTravelerListDialogOpen}
-        travelers={travelersList}
+        filterField={travelersFilterField}
+        filterValue={travelersFilterValue}
+        onFilterFieldChange={handleTravelerFilterFieldChange}
+        onFilterValueChange={handleTravelerFilterValueChange}
+        travelers={travelersList.filter((traveler) =>
+          (activeServiceItem?.selectedTravelers || []).every((selected) => {
+            if (selected.companyId === traveler.companyId && selected.code !== undefined && selected.code !== null && traveler.code !== undefined && traveler.code !== null) {
+              return String(selected.code) !== String(traveler.code);
+            }
+            return selected.id !== traveler.id;
+          }),
+        )}
         isLoading={travelersLoading}
-        isSelected={(travelerId) => selectedTravelers.some((item) => item.id === travelerId)}
+        pagination={travelersPagination}
+        onPageChange={handleTravelersPageChange}
+        isSelected={(travelerId) => (activeServiceItem?.selectedTravelers || []).some((item) => item.id === travelerId)}
         onSelect={(traveler) => {
+          if (!activeServiceItemId) {
+            return;
+          }
           setSeatSelectionTraveler(traveler);
           setTravelerListDialogOpen(false);
           setSeatDialogOpen(true);
@@ -920,7 +1119,39 @@ const PDV = () => {
         isLoading={travelerCreateSaving}
       />
 
-      <SeatSelectionDialog open={seatDialogOpen} onOpenChange={setSeatDialogOpen} onSubmit={handleSeatSelected} isLoading={isProcessing} occupiedSeats={occupiedSeats} totalSeats={selectedPackageTripData?.bus?.totalSeats || 40} />
+      <SeatSelectionDialog open={seatDialogOpen} onOpenChange={setSeatDialogOpen} onSubmit={handleSeatSelected} isLoading={isProcessing} occupiedSeats={occupiedSeats} totalSeats={activeServiceTrip?.bus?.totalSeats || 40} busType={activeServiceTrip?.bus?.type || "conventional"} />
+
+      <Dialog open={duplicateServiceDialogOpen} onOpenChange={setDuplicateServiceDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Serviço já adicionado</DialogTitle>
+            <DialogDescription>Este serviço já está na lista. Deseja adicionar mesmo assim?</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDuplicateServiceDialogOpen(false);
+                setPendingServiceId("");
+                clearServiceInputs();
+              }}
+            >
+              Não
+            </Button>
+            <Button
+              onClick={() => {
+                if (pendingServiceId) {
+                  addServiceToCart(pendingServiceId);
+                }
+                setDuplicateServiceDialogOpen(false);
+                setPendingServiceId("");
+              }}
+            >
+              Sim
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
