@@ -13,11 +13,10 @@ import BusesList from "@/pages/admin/BusesList";
 import HotelsList from "@/pages/admin/HotelsList";
 import UsersList from "@/pages/admin/UsersList";
 import PackagesTrips from "@/pages/admin/PackagesTrips";
-import POS from "@/pages/admin/POS";
+import POS from "@/pages/common/POS";
 import Financial from "@/pages/admin/Financial";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import AttendantCustomers from "@/pages/attendant/AttendantCustomers";
-import AttendantPOS from "@/pages/attendant/AttendantPOS";
 import Profile from "@/pages/Profile";
 
 const AppRoutes = () => {
@@ -109,10 +108,7 @@ const AppRoutes = () => {
             path="pos"
             element={
               <ProtectedRoute allowedRoles={["admin", "attendant"]}>
-                {(() => {
-                  const { role } = useAuth();
-                  return role === "attendant" ? <AttendantPOS /> : <POS />;
-                })()}
+                <POS />
               </ProtectedRoute>
             }
           />

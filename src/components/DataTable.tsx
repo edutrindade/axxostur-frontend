@@ -77,14 +77,14 @@ export function DataTable<T extends { id: string }>({
     <>
       <div className="hidden lg:block bg-white border border-slate-200 overflow-hidden shadow-sm">
         <Table>
-          <TableHeader className="bg-gradient-to-r from-slate-50 to-slate-100">
+          <TableHeader className="bg-gradient-to-r from-slate-200 to-slate-100">
             <TableRow className="hover:bg-transparent">
               {columns.map((column) => (
-                <TableHead key={String(column.key)} className="text-slate-700 font-semibold">
+                <TableHead key={String(column.key)} className="text-slate-800 font-semibold">
                   {column.label}
                 </TableHead>
               ))}
-              {actions.length > 0 && <TableHead className="text-slate-700 font-semibold text-right">Ações</TableHead>}
+              {actions.length > 0 && <TableHead className="text-slate-800 font-semibold text-right">Ações</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>

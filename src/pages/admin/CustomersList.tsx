@@ -78,7 +78,13 @@ const CustomersList = () => {
     {
       key: "name",
       label: "Nome",
-      render: (value) => <span className="font-semibold text-slate-900 text-base">{value}</span>,
+      render: (_value, customer) => (
+        <div className="flex flex-col">
+          <span className="font-semibold text-slate-900 text-base">
+            #{customer.code} - {customer.name}
+          </span>
+        </div>
+      ),
     },
     {
       key: "email",

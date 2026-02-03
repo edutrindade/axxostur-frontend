@@ -11,7 +11,7 @@ import type { Hotel, CreateHotelRequest, UpdateHotelRequest } from "@/services/h
 import type { Address } from "@/services/addresses";
 import { fetchAddressFromViaCEP } from "@/services/addresses";
 import { useCreateAddressMutation, useUpdateAddressMutation } from "@/hooks/useAddressesMutations";
-import { formatPhone } from "@/utils/format";
+import { formatPhone, cleanPhone } from "@/utils/format";
 
 const STATES = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 
@@ -202,7 +202,7 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
         name: formData.name,
         description: formData.description || undefined,
         email: formData.email || undefined,
-        phone: formData.phone ? formData.phone.replace(/\D/g, "") : undefined,
+        phone: cleanPhone(formData.phone),
         website: formData.website || undefined,
         checkInTime: formData.checkInTime || undefined,
         checkOutTime: formData.checkOutTime || undefined,
@@ -218,7 +218,7 @@ export const HotelFormDialog = ({ open, onOpenChange, onSubmit, isLoading, hotel
         companyId: companyId,
         description: formData.description || undefined,
         email: formData.email || undefined,
-        phone: formData.phone ? formData.phone.replace(/\D/g, "") : undefined,
+        phone: cleanPhone(formData.phone),
         website: formData.website || undefined,
         checkInTime: formData.checkInTime || undefined,
         checkOutTime: formData.checkOutTime || undefined,

@@ -92,3 +92,8 @@ export const updateCustomer = async (id: string, data: UpdateCustomerRequest): P
 export const deleteCustomer = async (id: string): Promise<void> => {
   await api.delete(`/clients/${id}`);
 };
+
+export const getCustomerByCode = async (code: string, companyId: string): Promise<Customer> => {
+  const response = await api.get<Customer>(`/clients/company/${companyId}/code/${code}`);
+  return response.data;
+};

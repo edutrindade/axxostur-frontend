@@ -28,6 +28,7 @@ export const formatPhone = (phone: string) => {
   const cleaned = phone.replace(/\D/g, "").slice(0, 11);
   if (cleaned.length <= 2) return cleaned;
   if (cleaned.length <= 7) return cleaned.replace(/(\d{2})(\d+)/, "($1) $2");
+  if (cleaned.length === 10) return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
   return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
 };
 
@@ -47,6 +48,14 @@ export const formatDate = (date: string) => {
 
 export const formatCurrency = (value: number) => {
   return value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+};
+
+export const formatPrice = (value: number | string) => {
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
+  return numValue.toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
   });
