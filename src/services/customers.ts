@@ -3,6 +3,7 @@ import type { Address } from "./addresses";
 
 export interface Customer {
   id: string;
+  code: number;
   name: string;
   companyId: string;
   addressId?: string;

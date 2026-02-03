@@ -50,6 +50,11 @@ export const getPackageTripsByCompany = async (companyId: string, page: number =
   return response.data;
 };
 
+export const getPackageTripByCode = async (code: string, companyId: string): Promise<PackageTrip> => {
+  const response = await api.get<PackageTrip>(`/package-trips/company/${companyId}/code/${code}`);
+  return response.data;
+};
+
 export const createPackageTrip = async (data: CreatePackageTripRequest): Promise<PackageTrip> => {
   const response = await api.post<PackageTrip>("/package-trips", data);
   return response.data;

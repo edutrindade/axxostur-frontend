@@ -13,7 +13,7 @@ import BusesList from "@/pages/admin/BusesList";
 import HotelsList from "@/pages/admin/HotelsList";
 import UsersList from "@/pages/admin/UsersList";
 import PackagesTrips from "@/pages/admin/PackagesTrips";
-import POS from "@/pages/common/POS";
+import PDV from "@/pages/common/PDV";
 import Financial from "@/pages/admin/Financial";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import AttendantCustomers from "@/pages/attendant/AttendantCustomers";
@@ -108,7 +108,7 @@ const AppRoutes = () => {
             path="pos"
             element={
               <ProtectedRoute allowedRoles={["admin", "attendant"]}>
-                <POS />
+                <PDV />
               </ProtectedRoute>
             }
           />

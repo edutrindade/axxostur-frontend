@@ -5,6 +5,7 @@ export type PackageTripStatus = "scheduled" | "in_progress" | "completed" | "can
 
 export interface PackageTrip {
   id: string;
+  code?: number | string;
   companyId: string;
   packageId: string;
   busId: string;
