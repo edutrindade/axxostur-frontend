@@ -11,14 +11,16 @@ import { useCustomersByCompanyQuery } from "@/hooks/useCustomersQuery";
 import { usePackageTripsQuery } from "@/hooks/usePackageTripsQuery";
 import { useCreateSaleMutation, useUpdateSaleMutation, useCreateSaleTravelerMutation } from "@/hooks/useSalesMutations";
 import { SeatSelectionDialog } from "@/components/SeatSelectionDialog";
-import { formatPrice, formatDate, formatCpf, formatPhone } from "@/utils/format";
+import { formatPrice, formatDate, formatPhone } from "@/utils/format";
 import { getCustomerByCode } from "@/services/customers";
 import { getPackageTripByCode } from "@/services/packageTrips";
 import { createTraveler, getTravelersByCompany, updateTraveler } from "@/services/travelers";
 import { useUsersListQuery } from "@/hooks/useUsersQuery";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { TravelerFormDialog } from "@/components/TravelerFormDialog";
+import { TravelersDialog } from "@/components/TravelersDialog";
+import { TravelersListDialog } from "@/components/TravelersListDialog";
 import type { Traveler } from "@/types/traveler";
 
 interface SaleTravelerTemp {
@@ -80,16 +82,14 @@ const PDV = () => {
   const [serviceCodeInput, setServiceCodeInput] = useState<string>("");
   const [serviceCodeError, setServiceCodeError] = useState<string>("");
   const [serviceCodeLoading, setServiceCodeLoading] = useState(false);
-  const [saleType, setSaleType] = useState<string>("pdv");
+  const [saleType, setSaleType] = useState<string>("sell");
   const [sellerId, setSellerId] = useState<string>(user?.id || "");
   const [saleDate, setSaleDate] = useState<string>(new Date().toISOString().slice(0, 10));
 
-  // Queries
   const { data: customersResponse } = useCustomersByCompanyQuery(company?.id || "", 1, 1000);
   const { data: packageTripsResponse } = usePackageTripsQuery(1, 1000, company?.id);
   const { data: usersResponse } = useUsersListQuery(1, 1000, "");
 
-  // Mutations
   const createSaleMutation = useCreateSaleMutation();
   const updateSaleMutation = useUpdateSaleMutation();
   const createSaleTravelerMutation = useCreateSaleTravelerMutation();
@@ -205,7 +205,6 @@ const PDV = () => {
 
     setCustomerCodeError("");
 
-    // Validar se é apenas número
     if (!/^\d+$/.test(customerCodeInput)) {
       setCustomerCodeError("Por favor, digite apenas números");
       return;
@@ -216,6 +215,7 @@ const PDV = () => {
     try {
       const customer = await getCustomerByCode(customerCodeInput, company?.id || "");
       setSelectedCustomer(customer.id);
+      setCustomerCodeInput(customer.code ? String(customer.code).padStart(3, "0") : "");
     } catch (error: any) {
       setCustomerCodeError("Cliente não encontrado");
       console.error("Erro ao buscar cliente por código:", error);
@@ -241,6 +241,7 @@ const PDV = () => {
     try {
       const service = await getPackageTripByCode(serviceCodeInput, company?.id || "");
       setSelectedPackageTrip(service.id);
+      setServiceCodeInput(service.code ? String(service.code).padStart(3, "0") : "");
     } catch (error: any) {
       setServiceCodeError("Serviço não encontrado");
       console.error("Erro ao buscar serviço por código:", error);
@@ -383,7 +384,6 @@ const PDV = () => {
     setIsProcessing(true);
 
     try {
-      // Step 1: Create sale
       const saleResponse = await createSaleMutation.mutateAsync({
         companyId: company?.id || "",
         clientId: selectedCustomer,
@@ -395,7 +395,6 @@ const PDV = () => {
         addition: additionValue,
       });
 
-      // Step 2: Update sale with payment info
       await updateSaleMutation.mutateAsync({
         id: saleResponse.id,
         data: {
@@ -406,7 +405,6 @@ const PDV = () => {
         },
       });
 
-      // Step 3: Add travelers to sale
       for (const traveler of saleTravelers) {
         await createSaleTravelerMutation.mutateAsync({
           saleId: saleResponse.id,
@@ -417,7 +415,6 @@ const PDV = () => {
 
       setSaleCreated(saleResponse.id);
 
-      // Reset form
       setSelectedCustomer("");
       setSelectedPackageTrip("");
       setQuantity(1);
@@ -440,6 +437,10 @@ const PDV = () => {
 
   const handleNewSale = () => {
     setSaleCreated(null);
+  };
+
+  const handleTravelerCreateFormChange = (field: keyof typeof travelerCreateForm, value: string) => {
+    setTravelerCreateForm((prev) => ({ ...prev, [field]: value }));
   };
 
   if (saleCreated) {
@@ -469,7 +470,6 @@ const PDV = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
@@ -483,7 +483,6 @@ const PDV = () => {
         </div>
 
         <div className="space-y-6">
-          {/* Header Card */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center">
@@ -491,12 +490,12 @@ const PDV = () => {
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-slate-900">Dados da Venda</h2>
-                <p className="text-sm text-slate-600">Agilize a venda usando o teclado</p>
+                <p className="text-sm text-slate-600">Preencha as informações da venda abaixo</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              <div className="lg:col-span-2 space-y-2">
+              <div className="lg:col-span-1 space-y-2">
                 <Label htmlFor="customer-code">Cód. Cliente</Label>
                 <Input
                   id="customer-code"
@@ -521,16 +520,23 @@ const PDV = () => {
                 )}
               </div>
 
-              <div className="lg:col-span-4 space-y-2">
+              <div className="lg:col-span-5 space-y-2">
                 <Label htmlFor="customer-select">Cliente</Label>
-                <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                <Select
+                  value={selectedCustomer}
+                  onValueChange={(value) => {
+                    setSelectedCustomer(value);
+                    const customer = customers.find((c) => c.id === value);
+                    setCustomerCodeInput(customer?.code ? String(customer.code).padStart(3, "0") : "");
+                  }}
+                >
                   <SelectTrigger id="customer-select">
                     <SelectValue placeholder="Escolha um cliente..." />
                   </SelectTrigger>
                   <SelectContent className="max-h-48">
                     {customers.map((customer) => (
                       <SelectItem key={customer.id} value={customer.id}>
-                        {customer.name} {customer.phone && `(${customer.phone})`}
+                        {customer.name} {customer.phone && `- ${formatPhone(customer.phone)}`}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -544,10 +550,8 @@ const PDV = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pdv">PDV</SelectItem>
-                    <SelectItem value="telefone">Telefone</SelectItem>
-                    <SelectItem value="online">Online</SelectItem>
-                    <SelectItem value="empresa">Empresa</SelectItem>
+                    <SelectItem value="sell">Venda</SelectItem>
+                    <SelectItem value="budget">Orçamento</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -575,7 +579,7 @@ const PDV = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-6">
-              <div className="lg:col-span-2 space-y-2">
+              <div className="lg:col-span-1 space-y-2">
                 <Label htmlFor="service-code">Cód. Serviço</Label>
                 <Input
                   id="service-code"
@@ -600,7 +604,14 @@ const PDV = () => {
 
               <div className="lg:col-span-10 space-y-2">
                 <Label htmlFor="trip-select">Selecione um serviço</Label>
-                <Select value={selectedPackageTrip} onValueChange={setSelectedPackageTrip}>
+                <Select
+                  value={selectedPackageTrip}
+                  onValueChange={(value) => {
+                    setSelectedPackageTrip(value);
+                    const service = packageTrips.find((trip) => trip.id === value);
+                    setServiceCodeInput(service?.code ? String(service.code).padStart(3, "0") : "");
+                  }}
+                >
                   <SelectTrigger id="trip-select">
                     <SelectValue placeholder="Escolha uma viagem..." />
                   </SelectTrigger>
@@ -614,20 +625,8 @@ const PDV = () => {
                 </Select>
               </div>
             </div>
-
-            {selectedCustomerData && (
-              <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-slate-600">
-                  <span className="font-semibold">Email:</span> {selectedCustomerData.email || "Não informado"}
-                </p>
-                <p className="text-sm text-slate-600">
-                  <span className="font-semibold">CPF:</span> {selectedCustomerData.cpf || "Não informado"}
-                </p>
-              </div>
-            )}
           </Card>
 
-          {/* Services List */}
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -737,14 +736,11 @@ const PDV = () => {
           </Card>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Summary & Payment - Right Section */}
             <div className="space-y-6">
-              {/* Values Summary */}
               <Card className="p-6 sticky top-8">
                 <h2 className="text-lg font-semibold text-slate-900 mb-4">Resumo da Venda</h2>
 
                 <div className="space-y-4">
-                  {/* Base values */}
                   <div className="space-y-3 pb-4 border-b">
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600">Valor Unitário:</span>
@@ -760,7 +756,6 @@ const PDV = () => {
                     </div>
                   </div>
 
-                  {/* Discount */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2">
                       <Percent size={16} className="text-red-600" />
@@ -781,7 +776,6 @@ const PDV = () => {
                     {discountValue > 0 && <div className="text-sm text-red-600 font-semibold">-{formatPrice(discountValue)}</div>}
                   </div>
 
-                  {/* Addition */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2">
                       <Tag size={16} className="text-green-600" />
@@ -802,7 +796,6 @@ const PDV = () => {
                     {additionValue > 0 && <div className="text-sm text-green-600 font-semibold">+{formatPrice(additionValue)}</div>}
                   </div>
 
-                  {/* Final Value */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600">Total:</span>
@@ -812,7 +805,6 @@ const PDV = () => {
                 </div>
               </Card>
 
-              {/* Payment Information */}
               <Card className="p-6">
                 <h2 className="text-lg font-semibold text-slate-900 mb-4">Pagamento</h2>
 
@@ -865,7 +857,6 @@ const PDV = () => {
                 </div>
               </Card>
 
-              {/* Action Button */}
               <Button className="w-full h-12 text-lg gap-2" disabled={isProcessing || saleTravelers.length === 0 || !selectedCustomer || !selectedPackageTrip} onClick={handleCreateSale}>
                 {isProcessing ? (
                   <>
@@ -884,324 +875,51 @@ const PDV = () => {
         </div>
       </div>
 
-      <Dialog open={travelerDialogOpen} onOpenChange={setTravelerDialogOpen}>
-        <DialogContent className="w-full max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Viajantes</DialogTitle>
-            <DialogDescription>Gerencie os viajantes selecionados para esta venda.</DialogDescription>
-          </DialogHeader>
+      <TravelersDialog
+        open={travelerDialogOpen}
+        onOpenChange={setTravelerDialogOpen}
+        selectedTravelers={selectedTravelers}
+        editingTravelerId={editingTravelerId}
+        editingTravelerForm={editingTravelerForm}
+        onEditFieldChange={(field, value) => setEditingTravelerForm((prev) => ({ ...prev, [field]: value }))}
+        onEditFieldUpdate={handleTravelerFieldUpdate}
+        onSelectTraveler={handleSelectTraveler}
+        onRemoveTraveler={(travelerId) => {
+          setSelectedTravelers((prev) => prev.filter((item) => item.id !== travelerId));
+          setSaleTravelers((prev) => prev.filter((item) => item.id !== travelerId));
+          if (editingTravelerId === travelerId) {
+            resetEditingTraveler();
+          }
+        }}
+        onOpenCreate={() => setTravelerCreateDialogOpen(true)}
+        onOpenList={() => setTravelerListDialogOpen(true)}
+        isListDisabled={!selectedPackageTrip}
+      />
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-900">Viajantes selecionados</h3>
-              <Button size="sm" className="gap-2" onClick={() => setTravelerCreateDialogOpen(true)}>
-                <Plus size={16} />
-                Cadastrar
-              </Button>
-            </div>
+      <TravelersListDialog
+        open={travelerListDialogOpen}
+        onOpenChange={setTravelerListDialogOpen}
+        travelers={travelersList}
+        isLoading={travelersLoading}
+        isSelected={(travelerId) => selectedTravelers.some((item) => item.id === travelerId)}
+        onSelect={(traveler) => {
+          setSeatSelectionTraveler(traveler);
+          setTravelerListDialogOpen(false);
+          setSeatDialogOpen(true);
+        }}
+      />
 
-            <div className="border border-slate-200 rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-28">Código</TableHead>
-                    <TableHead>Nome</TableHead>
-                    <TableHead className="w-40">CPF</TableHead>
-                    <TableHead className="w-40">Telefone</TableHead>
-                    <TableHead className="w-40 text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {selectedTravelers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center text-slate-500 py-6">
-                        Nenhum viajante selecionado
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    selectedTravelers.map((traveler) => (
-                      <TableRow key={traveler.id}>
-                        <TableCell className="text-slate-600">{traveler.code !== undefined && traveler.code !== null ? String(traveler.code).padStart(3, "0") : "-"}</TableCell>
-                        <TableCell className="font-semibold text-slate-900">{traveler.name}</TableCell>
-                        <TableCell className="text-slate-600">{traveler.cpf ? formatCpf(traveler.cpf) : "-"}</TableCell>
-                        <TableCell className="text-slate-600">{traveler.phone ? formatPhone(traveler.phone) : "-"}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button size="sm" variant="outline" onClick={() => handleSelectTraveler(traveler)}>
-                              Editar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-red-600 hover:text-red-700"
-                              onClick={() => {
-                                setSelectedTravelers((prev) => prev.filter((item) => item.id !== traveler.id));
-                                setSaleTravelers((prev) => prev.filter((item) => item.id !== traveler.id));
-                                if (editingTravelerId === traveler.id) {
-                                  resetEditingTraveler();
-                                }
-                              }}
-                            >
-                              Remover
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+      <TravelerFormDialog
+        open={travelerCreateDialogOpen}
+        onOpenChange={setTravelerCreateDialogOpen}
+        form={travelerCreateForm}
+        onFormChange={handleTravelerCreateFormChange}
+        onSubmit={handleCreateTravelerSubmit}
+        onReset={resetCreateTraveler}
+        error={travelerCreateError}
+        isLoading={travelerCreateSaving}
+      />
 
-            {editingTravelerId && (
-              <div className="border border-slate-200 rounded-lg p-4 space-y-4">
-                <h4 className="text-sm font-semibold text-slate-900">Editar viajante</h4>
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                  <div className="lg:col-span-6 space-y-2">
-                    <Label htmlFor="edit-traveler-name">Nome</Label>
-                    <Input id="edit-traveler-name" value={editingTravelerForm.name} onChange={(e) => setEditingTravelerForm((prev) => ({ ...prev, name: e.target.value }))} onBlur={(e) => handleTravelerFieldUpdate("name", e.target.value)} className="h-11 text-base" />
-                  </div>
-                  <div className="lg:col-span-3 space-y-2">
-                    <Label htmlFor="edit-traveler-cpf">CPF</Label>
-                    <Input
-                      id="edit-traveler-cpf"
-                      value={editingTravelerForm.cpf}
-                      onChange={(e) => setEditingTravelerForm((prev) => ({ ...prev, cpf: formatCpf(e.target.value) }))}
-                      onBlur={(e) => handleTravelerFieldUpdate("cpf", e.target.value)}
-                      maxLength={14}
-                      className="h-11 text-base"
-                    />
-                  </div>
-                  <div className="lg:col-span-3 space-y-2">
-                    <Label htmlFor="edit-traveler-phone">Telefone</Label>
-                    <Input
-                      id="edit-traveler-phone"
-                      value={editingTravelerForm.phone}
-                      onChange={(e) => setEditingTravelerForm((prev) => ({ ...prev, phone: formatPhone(e.target.value) }))}
-                      onBlur={(e) => handleTravelerFieldUpdate("phone", e.target.value)}
-                      maxLength={15}
-                      className="h-11 text-base"
-                    />
-                  </div>
-                  <div className="lg:col-span-4 space-y-2">
-                    <Label htmlFor="edit-traveler-document">RG</Label>
-                    <Input
-                      id="edit-traveler-document"
-                      value={editingTravelerForm.document}
-                      onChange={(e) => setEditingTravelerForm((prev) => ({ ...prev, document: e.target.value }))}
-                      onBlur={(e) => handleTravelerFieldUpdate("document", e.target.value)}
-                      className="h-11 text-base"
-                    />
-                  </div>
-                  <div className="lg:col-span-4 space-y-2">
-                    <Label htmlFor="edit-traveler-email">Email</Label>
-                    <Input
-                      id="edit-traveler-email"
-                      type="email"
-                      value={editingTravelerForm.email}
-                      onChange={(e) => setEditingTravelerForm((prev) => ({ ...prev, email: e.target.value }))}
-                      onBlur={(e) => handleTravelerFieldUpdate("email", e.target.value)}
-                      className="h-11 text-base"
-                    />
-                  </div>
-                  <div className="lg:col-span-4 space-y-2">
-                    <Label htmlFor="edit-traveler-birth">Data de Nascimento</Label>
-                    <Input
-                      id="edit-traveler-birth"
-                      type="date"
-                      value={editingTravelerForm.birthDate}
-                      onChange={(e) => setEditingTravelerForm((prev) => ({ ...prev, birthDate: e.target.value }))}
-                      onBlur={(e) => handleTravelerFieldUpdate("birthDate", e.target.value)}
-                      className="h-11 text-base"
-                    />
-                  </div>
-                  <div className="lg:col-span-4 space-y-2">
-                    <Label htmlFor="edit-traveler-gender">Gênero</Label>
-                    <Select
-                      value={editingTravelerForm.gender}
-                      onValueChange={(value) => {
-                        setEditingTravelerForm((prev) => ({ ...prev, gender: value }));
-                        handleTravelerFieldUpdate("gender", value);
-                      }}
-                    >
-                      <SelectTrigger id="edit-traveler-gender" className="h-11 text-base">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="male">Masculino</SelectItem>
-                        <SelectItem value="female">Feminino</SelectItem>
-                        <SelectItem value="other">Outro</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="lg:col-span-12 space-y-2">
-                    <Label htmlFor="edit-traveler-notes">Observações</Label>
-                    <Input id="edit-traveler-notes" value={editingTravelerForm.notes} onChange={(e) => setEditingTravelerForm((prev) => ({ ...prev, notes: e.target.value }))} onBlur={(e) => handleTravelerFieldUpdate("notes", e.target.value)} className="h-11 text-base" />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button onClick={() => setTravelerListDialogOpen(true)} disabled={!selectedPackageTrip}>
-              Listagem
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={travelerListDialogOpen} onOpenChange={setTravelerListDialogOpen}>
-        <DialogContent className="w-full max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Listagem de viajantes</DialogTitle>
-            <DialogDescription>Selecione um viajante para adicionar à venda.</DialogDescription>
-          </DialogHeader>
-
-          <div className="border border-slate-200 rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-28">Código</TableHead>
-                  <TableHead>Nome</TableHead>
-                  <TableHead className="w-40">CPF</TableHead>
-                  <TableHead className="w-40">Telefone</TableHead>
-                  <TableHead className="w-40 text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {travelersLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-slate-500 py-6">
-                      Carregando viajantes...
-                    </TableCell>
-                  </TableRow>
-                ) : travelersList.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-slate-500 py-6">
-                      Nenhum viajante encontrado
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  travelersList.map((traveler) => (
-                    <TableRow key={traveler.id}>
-                      <TableCell className="text-slate-600">{traveler.code !== undefined && traveler.code !== null ? String(traveler.code).padStart(3, "0") : "-"}</TableCell>
-                      <TableCell className="font-semibold text-slate-900">{traveler.name}</TableCell>
-                      <TableCell className="text-slate-600">{traveler.cpf ? formatCpf(traveler.cpf) : "-"}</TableCell>
-                      <TableCell className="text-slate-600">{traveler.phone ? formatPhone(traveler.phone) : "-"}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setSeatSelectionTraveler(traveler);
-                            setTravelerListDialogOpen(false);
-                            setSeatDialogOpen(true);
-                          }}
-                          disabled={selectedTravelers.some((item) => item.id === traveler.id)}
-                        >
-                          Selecionar
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={travelerCreateDialogOpen} onOpenChange={setTravelerCreateDialogOpen}>
-        <DialogContent className="w-full max-w-2xl sm:max-w-3xl md:max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Cadastrar viajante</DialogTitle>
-            <DialogDescription>Preencha os dados para cadastrar um novo viajante.</DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4 md:border-r md:pr-6">
-                <h3 className="text-base font-semibold text-slate-900">Informações Pessoais</h3>
-
-                <div className="space-y-2">
-                  <label className="text-base font-medium text-slate-700">
-                    Nome <span className="text-red-500">*</span>
-                  </label>
-                  <Input id="create-traveler-name" value={travelerCreateForm.name} onChange={(e) => setTravelerCreateForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Ex: João Santos" />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-base font-medium text-slate-700">CPF</label>
-                  <Input id="create-traveler-cpf" value={travelerCreateForm.cpf} onChange={(e) => setTravelerCreateForm((prev) => ({ ...prev, cpf: formatCpf(e.target.value) }))} placeholder="000.000.000-00" maxLength={14} />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-base font-medium text-slate-700">RG</label>
-                  <Input id="create-traveler-document" value={travelerCreateForm.document} onChange={(e) => setTravelerCreateForm((prev) => ({ ...prev, document: e.target.value }))} placeholder="Ex: MG123456789" />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-base font-medium text-slate-700">Data de Nascimento</label>
-                  <Input id="create-traveler-birth" type="date" value={travelerCreateForm.birthDate} onChange={(e) => setTravelerCreateForm((prev) => ({ ...prev, birthDate: e.target.value }))} />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-base font-medium text-slate-700">Gênero</label>
-                  <Select value={travelerCreateForm.gender} onValueChange={(value) => setTravelerCreateForm((prev) => ({ ...prev, gender: value }))}>
-                    <SelectTrigger id="create-traveler-gender">
-                      <SelectValue placeholder="Selecione o gênero" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Masculino</SelectItem>
-                      <SelectItem value="female">Feminino</SelectItem>
-                      <SelectItem value="other">Outro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-base font-semibold text-slate-900">Contato</h3>
-
-                <div className="space-y-2">
-                  <label className="text-base font-medium text-slate-700">Email</label>
-                  <Input id="create-traveler-email" type="email" value={travelerCreateForm.email} onChange={(e) => setTravelerCreateForm((prev) => ({ ...prev, email: e.target.value }))} placeholder="joao.santos@email.com" />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-base font-medium text-slate-700">Telefone</label>
-                  <Input id="create-traveler-phone" value={travelerCreateForm.phone} onChange={(e) => setTravelerCreateForm((prev) => ({ ...prev, phone: formatPhone(e.target.value) }))} placeholder="(85) 3366-1234" maxLength={15} />
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t" />
-
-            <div className="space-y-2">
-              <label className="text-base font-medium text-slate-700">Observações</label>
-              <Input id="create-traveler-notes" value={travelerCreateForm.notes} onChange={(e) => setTravelerCreateForm((prev) => ({ ...prev, notes: e.target.value }))} placeholder="Observações sobre o viajante" />
-            </div>
-          </div>
-
-          {travelerCreateError && (
-            <div className="flex items-center gap-2 text-sm text-red-600">
-              <AlertCircle size={16} />
-              {travelerCreateError}
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={resetCreateTraveler} disabled={travelerCreateSaving}>
-              Limpar
-            </Button>
-            <Button onClick={handleCreateTravelerSubmit} disabled={travelerCreateSaving}>
-              Cadastrar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Seat Selection Dialog */}
       <SeatSelectionDialog open={seatDialogOpen} onOpenChange={setSeatDialogOpen} onSubmit={handleSeatSelected} isLoading={isProcessing} occupiedSeats={occupiedSeats} totalSeats={selectedPackageTripData?.bus?.totalSeats || 40} />
     </div>
   );
