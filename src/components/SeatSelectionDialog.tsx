@@ -276,14 +276,13 @@ function DesktopConventionalBusSeats({
     }
   }
 
-  const shouldAddBathroomColumn = hasBathroom && rows % 2 === 1 && isDivisibleBy4;
-  const shouldShowBathroomStripe = hasBathroom && rows % 2 === 0;
+  const shouldAddBathroomColumn = hasBathroom && isDivisibleBy4;
 
   return (
     <div className={cn(variant === "desktop" ? "hidden md:flex" : "flex", "flex-col items-center")}>
-      <div className={cn("relative", shouldShowBathroomStripe && "pr-16")}>
+      <div className="relative">
         <div className="flex items-stretch gap-2">
-          <div>
+          <div className={cn(variant === "desktop" ? "ml-4" : "ml-0")}>
             <div className="flex items-start gap-8">
               <div className="flex gap-2">
                 {top.map(([top, bottom], idx) => (
@@ -309,17 +308,6 @@ function DesktopConventionalBusSeats({
           <div className="h-10" />
           <FrontSteeringPanel />
         </div>
-
-        {shouldShowBathroomStripe && (
-          <div className="absolute -right-16 top-1/2 -translate-y-1/2">
-            <div className="h-[7.5rem] w-14 rounded-xl bg-slate-100 border-2 border-slate-300 shadow-sm flex items-center justify-center">
-              <div className="flex items-center gap-2 rotate-90 text-slate-700">
-                <BathroomIcon />
-                <span className="text-xs font-semibold tracking-wide">BANHEIRO</span>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
