@@ -30,6 +30,7 @@ function Seat({ number, status, onClick }: SeatProps) {
 
   return (
     <button
+      data-seat
       onClick={onClick}
       disabled={isDisabled}
       className={cn(
@@ -148,39 +149,24 @@ function DesktopBusLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ConventionalBusSeats({ totalSeats, occupiedSeats, reservedSeats, selectedSeat, onSeatClick }: { totalSeats: number; occupiedSeats: number[]; reservedSeats: number; selectedSeat: number | null; onSeatClick: (seat: number) => void }) {
-  const rows = Math.ceil(totalSeats / 4);
-
-  const getStatus = (seatNum: number): SeatStatus => {
-    if (occupiedSeats.includes(seatNum)) return "occupied";
-    if (seatNum <= reservedSeats) return "reserved";
-    if (selectedSeat === seatNum) return "selected";
-    return "available";
-  };
-
+function MobileDesktopBusLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      {Array.from({ length: rows }, (_, rowIndex) => {
-        const seat1 = rowIndex * 4 + 1;
-        const seat2 = rowIndex * 4 + 2;
-        const seat3 = rowIndex * 4 + 3;
-        const seat4 = rowIndex * 4 + 4;
+    <div className="md:hidden w-full">
+      <div className="relative w-full h-[60dvh] overflow-auto overscroll-contain">
+        <div className="relative w-fit origin-top-left [&_[data-seat]]:-rotate-90 [&_.rotate-90]:-rotate-90" style={{ transform: "rotate(90deg) translateY(-100%)" }}>
+          <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-20 h-52 rounded-[999px] bg-gradient-to-b from-sky-200 to-sky-400 opacity-70 blur-[0.5px]" />
+          <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-20 h-52 rounded-[999px] bg-gradient-to-b from-sky-200 to-sky-400 opacity-70 blur-[0.5px]" />
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border-4 border-slate-800 bg-white shadow-sm" />
 
-        return (
-          <div key={rowIndex} className="flex flex-col gap-1.5">
-            <div className="flex gap-1.5">
-              {seat3 <= totalSeats && <Seat number={seat3} status={getStatus(seat3)} onClick={() => onSeatClick(seat3)} />}
-              {seat4 <= totalSeats && <Seat number={seat4} status={getStatus(seat4)} onClick={() => onSeatClick(seat4)} />}
-            </div>
+          <div className="pointer-events-none absolute -left-10 top-1/2 -translate-y-[80px] z-50 w-4 h-8 rounded-full bg-amber-200 border border-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.9)]" />
+          <div className="pointer-events-none absolute -left-10 top-1/2 translate-y-[50px] z-50 w-4 h-8 rounded-full bg-amber-200 border border-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.9)]" />
 
-            <div className="flex gap-1.5">
-              {seat1 <= totalSeats && <Seat number={seat1} status={getStatus(seat1)} onClick={() => onSeatClick(seat1)} />}
-              {seat2 <= totalSeats && <Seat number={seat2} status={getStatus(seat2)} onClick={() => onSeatClick(seat2)} />}
-            </div>
+          <div className="relative bg-white rounded-[28px] border-2 border-slate-200 shadow-lg pl-20 pr-10 py-8">
+            <div className="flex items-center justify-center">{children}</div>
           </div>
-        );
-      })}
-    </>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -256,6 +242,7 @@ function DesktopConventionalBusSeats({
   hasBathroom,
   selectedSeat,
   onSeatClick,
+  variant = "desktop",
 }: {
   totalSeats: number;
   occupiedSeats: number[];
@@ -263,6 +250,7 @@ function DesktopConventionalBusSeats({
   hasBathroom: boolean;
   selectedSeat: number | null;
   onSeatClick: (seat: number) => void;
+  variant?: "desktop" | "mobile";
 }) {
   const rows = Math.ceil(totalSeats / 4);
 
@@ -292,7 +280,7 @@ function DesktopConventionalBusSeats({
   const shouldShowBathroomStripe = hasBathroom && rows % 2 === 0;
 
   return (
-    <div className="hidden md:flex flex-col items-center">
+    <div className={cn(variant === "desktop" ? "hidden md:flex" : "flex", "flex-col items-center")}>
       <div className={cn("relative", shouldShowBathroomStripe && "pr-16")}>
         <div className="flex items-stretch gap-2">
           <div>
@@ -426,7 +414,7 @@ export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, t
         onOpenChange(open);
       }}
     >
-      <DialogContent className="w-full max-w-2xl sm:max-w-3xl md:max-w-7xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-2xl sm:max-w-3xl md:max-w-7xl max-h-[92dvh] md:max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl">Selecione a Poltrona</DialogTitle>
           <DialogDescription>
@@ -434,7 +422,7 @@ export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, t
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="flex-1 min-h-0 space-y-4 py-4 overflow-y-auto">
           <div className="flex flex-wrap gap-6 justify-center pb-4 border-b">
             <div className="flex items-center gap-2">
               <div className="w-8 h-10 bg-emerald-100 border-2 border-emerald-300 rounded-lg flex items-center justify-center shadow-sm">
@@ -466,13 +454,15 @@ export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, t
           </div>
 
           <div className="md:hidden">
-            <BusLayout type={busType}>
-              {isDoubleDecker ? (
+            {isDoubleDecker ? (
+              <BusLayout type={busType}>
                 <DoubleDeckerBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} busType={busType} />
-              ) : (
-                <ConventionalBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} />
-              )}
-            </BusLayout>
+              </BusLayout>
+            ) : (
+              <MobileDesktopBusLayout>
+                <DesktopConventionalBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} hasBathroom={hasBathroom} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} variant="mobile" />
+              </MobileDesktopBusLayout>
+            )}
           </div>
 
           {!isDoubleDecker ? (
