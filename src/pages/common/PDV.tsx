@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { Plus, Minus, DollarSign, Percent, Tag, AlertCircle, Trash2, UsersRound, PlusIcon } from "lucide-react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { Plus, Minus, DollarSign, Percent, Tag, AlertCircle, Trash2, UsersRound, PlusIcon, RotateCcw, CreditCard, Banknote, QrCode, FileText, Check, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import { TravelerFormDialog } from "@/components/TravelerFormDialog";
 import { TravelersDialog } from "@/components/TravelersDialog";
 import { TravelersListDialog } from "@/components/TravelersListDialog";
 import type { Traveler, PaginationData } from "@/types/traveler";
+import type { PaymentMethod } from "@/types/sale";
 
 interface SaleTravelerTemp {
   id: string;
@@ -41,6 +42,9 @@ interface ServiceCartItem {
 
 const TRAVELERS_PAGE_SIZE = 10;
 
+type AdjustmentKind = "discount" | "addition";
+type AdjustmentType = "fixed" | "percent";
+
 const PDV = () => {
   const { company, user } = useAuth();
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
@@ -49,9 +53,14 @@ const PDV = () => {
   const [addition, setAddition] = useState<number>(0);
   const [discountType, setDiscountType] = useState<"fixed" | "percent">("fixed");
   const [additionType, setAdditionType] = useState<"fixed" | "percent">("fixed");
-  const [paymentMethod, setPaymentMethod] = useState<string>("credit_card");
+
+  const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
+  const [adjustmentKind, setAdjustmentKind] = useState<AdjustmentKind>("discount");
+  const [adjustmentDraftValue, setAdjustmentDraftValue] = useState<number>(0);
+  const [adjustmentDraftType, setAdjustmentDraftType] = useState<AdjustmentType>("fixed");
+  const adjustmentValueInputRef = useRef<HTMLInputElement | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("credit_card");
   const [installments, setInstallments] = useState<number>(1);
-  const [interestRate, setInterestRate] = useState<number>(0);
   const [serviceItems, setServiceItems] = useState<ServiceCartItem[]>([]);
   const [activeServiceItemId, setActiveServiceItemId] = useState<string>("");
   const [seatDialogOpen, setSeatDialogOpen] = useState(false);
@@ -134,12 +143,6 @@ const PDV = () => {
     }, 0);
   }, [serviceItems, packageTripsById]);
 
-  const totalQuantity = useMemo(() => {
-    return serviceItems.reduce((sum, item) => sum + item.quantity, 0);
-  }, [serviceItems]);
-
-  const baseValue = totalQuantity > 0 ? subtotal / totalQuantity : 0;
-
   const discountValue = useMemo(() => {
     if (discountType === "percent") {
       return (subtotal * discount) / 100;
@@ -156,6 +159,137 @@ const PDV = () => {
 
   const finalValue = Math.max(0, subtotal - discountValue + additionValue);
   const installmentValue = finalValue / Math.max(1, installments);
+
+  const paymentMethodOptions = useMemo(
+    () =>
+      [
+        {
+          value: "cash" as const,
+          label: "Dinheiro",
+          description: "Troco disponível",
+          icon: Banknote,
+        },
+        {
+          value: "pix" as const,
+          label: "PIX",
+          description: "QR Code ou chave",
+          icon: QrCode,
+        },
+        {
+          value: "debit_card" as const,
+          label: "Cartão de Débito",
+          description: "Pagamento na maquininha",
+          icon: CreditCard,
+        },
+        {
+          value: "credit_card" as const,
+          label: "Cartão de Crédito",
+          description: "Pagamento na maquininha",
+          icon: CreditCard,
+        },
+        {
+          value: "bank_slip" as const,
+          label: "Boleto Bancário",
+          description: "Pagamento via boleto",
+          icon: Receipt,
+        },
+        {
+          value: "check" as const,
+          label: "Cheque",
+          description: "Pagamento manual",
+          icon: FileText,
+        },
+      ] satisfies Array<{
+        value: PaymentMethod;
+        label: string;
+        description: string;
+        icon: typeof CreditCard;
+      }>,
+    [],
+  );
+
+  const handlePaymentMethodChange = useCallback(
+    (method: PaymentMethod) => {
+      setPaymentMethod(method);
+      if (method !== "credit_card" && method !== "bank_slip") {
+        setInstallments(1);
+      }
+    },
+    [setInstallments],
+  );
+
+  const paymentMethodLabel = useMemo(() => {
+    return paymentMethodOptions.find((option) => option.value === paymentMethod)?.label ?? "-";
+  }, [paymentMethod, paymentMethodOptions]);
+
+  const computeAdjustmentValue = useCallback(
+    (kind: AdjustmentKind, value: number, type: AdjustmentType) => {
+      const normalizedValue = Math.max(0, Number.isFinite(value) ? value : 0);
+      if (type === "percent") {
+        const percentValue = kind === "discount" ? Math.min(100, normalizedValue) : normalizedValue;
+        return (subtotal * percentValue) / 100;
+      }
+      return normalizedValue;
+    },
+    [subtotal],
+  );
+
+  const openAdjustmentDialog = useCallback(
+    (kind: AdjustmentKind) => {
+      if (serviceItems.length === 0) {
+        toast("Adicione pelo menos um serviço para aplicar desconto/acréscimo.");
+        return;
+      }
+
+      setAdjustmentKind(kind);
+      if (kind === "discount") {
+        setAdjustmentDraftValue(discount);
+        setAdjustmentDraftType(discountType);
+      } else {
+        setAdjustmentDraftValue(addition);
+        setAdjustmentDraftType(additionType);
+      }
+      setAdjustmentDialogOpen(true);
+    },
+    [addition, additionType, discount, discountType, serviceItems.length],
+  );
+
+  const resetAdjustments = useCallback(() => {
+    setDiscount(0);
+    setAddition(0);
+  }, []);
+
+  useEffect(() => {
+    if (!adjustmentDialogOpen) return;
+    const handle = window.setTimeout(() => adjustmentValueInputRef.current?.focus(), 0);
+    return () => window.clearTimeout(handle);
+  }, [adjustmentDialogOpen]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+      if (seatDialogOpen || travelerDialogOpen || travelerListDialogOpen || travelerCreateDialogOpen || duplicateServiceDialogOpen) return;
+
+      if (event.key === "F2") {
+        event.preventDefault();
+        openAdjustmentDialog("discount");
+      }
+
+      if (event.key === "F3") {
+        event.preventDefault();
+        openAdjustmentDialog("addition");
+      }
+
+      if (event.key === "F4") {
+        event.preventDefault();
+        resetAdjustments();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [duplicateServiceDialogOpen, openAdjustmentDialog, resetAdjustments, seatDialogOpen, travelerCreateDialogOpen, travelerDialogOpen, travelerListDialogOpen]);
 
   const occupiedSeats = activeServiceItem?.saleTravelers.map((t) => t.seatNumber) || [];
 
@@ -538,7 +672,6 @@ const PDV = () => {
           status: "confirmed",
           paymentMethod: paymentMethod as any,
           installments,
-          interestRate,
         },
       });
 
@@ -560,7 +693,6 @@ const PDV = () => {
       setAdditionType("fixed");
       setPaymentMethod("credit_card");
       setInstallments(1);
-      setInterestRate(0);
       setServiceItems([]);
       setActiveServiceItemId("");
     } catch (error) {
@@ -611,8 +743,8 @@ const PDV = () => {
             <div className="flex items-center gap-4">
               {company?.logoUrl && <img src={company.logoUrl} alt={company.name} className="h-12 object-contain" />}
               <div>
-                <h1 className="text-4xl font-bold text-slate-900">Ponto de Venda</h1>
-                <p className="text-slate-600 mt-1">{company?.fantasyName}</p>
+                <h1 className="text-5xl font-bold text-slate-900">Ponto de Venda</h1>
+                <p className="text-slate-600 mt-1"></p>
               </div>
             </div>
           </div>
@@ -741,7 +873,7 @@ const PDV = () => {
               </div>
 
               <div className="lg:col-span-10 space-y-2">
-                <Label htmlFor="trip-select">Selecione um serviço</Label>
+                <Label htmlFor="trip-select">Serviço</Label>
                 <Select
                   value={selectedPackageTrip}
                   onValueChange={(value) => {
@@ -751,7 +883,7 @@ const PDV = () => {
                   }}
                 >
                   <SelectTrigger id="trip-select">
-                    <SelectValue placeholder="Escolha uma viagem..." />
+                    <SelectValue placeholder="Escolha um serviço..." />
                   </SelectTrigger>
                   <SelectContent className="max-h-48">
                     {packageTrips.map((trip) => (
@@ -774,9 +906,14 @@ const PDV = () => {
 
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">Lista de Serviços</h2>
-                <p className="text-sm text-slate-600">Itens da venda</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center">
+                  <Icon name="shoppingCart" size={20} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900">Lista de Serviços</h2>
+                  <p className="text-sm text-slate-600">Itens da venda</p>
+                </div>
               </div>
               <div className="text-sm text-slate-500">UN = Unidade</div>
             </div>
@@ -900,99 +1037,108 @@ const PDV = () => {
                 )}
               </TableBody>
             </Table>
+
+            <div className="mt-4 pt-4 border-t flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Ações rápidas</p>
+                <p className="text-xs text-slate-500">F2 Desconto • F3 Acréscimo • F4 Zerar ajustes</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 justify-end">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button type="button" variant="outline" className="gap-2" onClick={() => openAdjustmentDialog("discount")} disabled={isProcessing || serviceItems.length === 0}>
+                      <Percent size={16} className="text-red-600" />
+                      Desconto
+                      <kbd className="ml-1 rounded border bg-slate-50 px-1.5 py-0.5 text-[11px] text-slate-600">F2</kbd>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Aplicar desconto (F2)</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button type="button" variant="outline" className="gap-2" onClick={() => openAdjustmentDialog("addition")} disabled={isProcessing || serviceItems.length === 0}>
+                      <Tag size={16} className="text-green-600" />
+                      Acréscimo
+                      <kbd className="ml-1 rounded border bg-slate-50 px-1.5 py-0.5 text-[11px] text-slate-600">F3</kbd>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Aplicar acréscimo (F3)</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button type="button" variant="ghost" className="gap-2" onClick={resetAdjustments} disabled={isProcessing}>
+                      <RotateCcw size={16} className="text-slate-600" />
+                      Zerar ajustes
+                      <kbd className="ml-1 rounded border bg-slate-50 px-1.5 py-0.5 text-[11px] text-slate-600">F4</kbd>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Zerar desconto e acréscimo (F4)</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
           </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-6">
-              <Card className="p-6 sticky top-8">
-                <h2 className="text-lg font-semibold text-slate-900 mb-4">Resumo da Venda</h2>
-
-                <div className="space-y-4">
-                  <div className="space-y-3 pb-4 border-b">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Valor Unitário:</span>
-                      <span className="font-semibold">{formatPrice(baseValue)}</span>
+          {serviceItems.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <Card className="p-6 lg:h-[500px] flex flex-col">
+                <div className="flex items-start justify-between mb-4 gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center">
+                      <Icon name="creditCard" size={20} />
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Quantidade:</span>
-                      <span className="font-semibold">{totalQuantity}</span>
-                    </div>
-                    <div className="flex justify-between text-base font-semibold bg-slate-50 p-2 rounded">
-                      <span>Subtotal:</span>
-                      <span>{formatPrice(subtotal)}</span>
+                    <div>
+                      <h2 className="text-lg font-semibold text-slate-900">Pagamento</h2>
+                      <p className="text-sm text-slate-600">Método e parcelamento</p>
                     </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2">
-                      <Percent size={16} className="text-red-600" />
-                      <span className="text-sm font-semibold">Desconto</span>
-                    </label>
-                    <div className="flex gap-2">
-                      <Input type="number" value={discount} onChange={(e) => setDiscount(Math.max(0, Number(e.target.value)))} placeholder="0" disabled={isProcessing} className="flex-1" />
-                      <Select value={discountType} onValueChange={(value: any) => setDiscountType(value)} disabled={isProcessing}>
-                        <SelectTrigger className="w-24">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="fixed">R$</SelectItem>
-                          <SelectItem value="percent">%</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {discountValue > 0 && <div className="text-sm text-red-600 font-semibold">-{formatPrice(discountValue)}</div>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2">
-                      <Tag size={16} className="text-green-600" />
-                      <span className="text-sm font-semibold">Acréscimo</span>
-                    </label>
-                    <div className="flex gap-2">
-                      <Input type="number" value={addition} onChange={(e) => setAddition(Math.max(0, Number(e.target.value)))} placeholder="0" disabled={isProcessing} className="flex-1" />
-                      <Select value={additionType} onValueChange={(value: any) => setAdditionType(value)} disabled={isProcessing}>
-                        <SelectTrigger className="w-24">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="fixed">R$</SelectItem>
-                          <SelectItem value="percent">%</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {additionValue > 0 && <div className="text-sm text-green-600 font-semibold">+{formatPrice(additionValue)}</div>}
-                  </div>
-
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Total:</span>
-                      <span className="font-bold text-lg text-blue-600">{formatPrice(finalValue)}</span>
-                    </div>
+                  <div className="text-right">
+                    <p className="text-xs text-slate-500">Total</p>
+                    <p className="text-base font-bold text-slate-900">{formatPrice(finalValue)}</p>
                   </div>
                 </div>
-              </Card>
 
-              <Card className="p-6">
-                <h2 className="text-lg font-semibold text-slate-900 mb-4">Pagamento</h2>
-
-                <div className="space-y-4">
+                <div className="flex-1 overflow-y-auto pr-1 space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="payment-method">Forma de Pagamento</Label>
-                    <Select value={paymentMethod} onValueChange={setPaymentMethod} disabled={isProcessing}>
-                      <SelectTrigger id="payment-method">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
-                        <SelectItem value="debit_card">Cartão de Débito</SelectItem>
-                        <SelectItem value="cash">Dinheiro</SelectItem>
-                        <SelectItem value="pix">PIX</SelectItem>
-                        <SelectItem value="check">Cheque</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label>Forma de Pagamento</Label>
+                    <div role="radiogroup" aria-label="Forma de Pagamento" className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {paymentMethodOptions.map((option) => {
+                        const selected = paymentMethod === option.value;
+                        const MethodIcon = option.icon;
+
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            role="radio"
+                            aria-checked={selected}
+                            onClick={() => handlePaymentMethodChange(option.value)}
+                            disabled={isProcessing}
+                            className={
+                              "w-full flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:opacity-60 " +
+                              (selected ? "border-emerald-400 bg-emerald-50 ring-2 ring-emerald-400/30" : "border-slate-200 bg-white hover:bg-slate-50")
+                            }
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className={"h-10 w-10 rounded-lg flex items-center justify-center shrink-0 transition-colors " + (selected ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-700")}>
+                                <MethodIcon size={20} />
+                              </div>
+
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-slate-900 truncate">{option.label}</p>
+                                <p className="text-xs text-slate-600 truncate">{option.description}</p>
+                              </div>
+                            </div>
+
+                            <div className="shrink-0">{selected ? <Check size={18} className="text-emerald-700" /> : <span className="h-[18px] w-[18px]" />}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  {paymentMethod === "credit_card" && (
+                  {(paymentMethod === "credit_card" || paymentMethod === "bank_slip") && (
                     <>
                       <div className="space-y-2">
                         <Label htmlFor="installments">Parcelamento</Label>
@@ -1009,11 +1155,6 @@ const PDV = () => {
                           </SelectContent>
                         </Select>
                       </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="interest-rate">Taxa de Juros (%)</Label>
-                        <Input id="interest-rate" type="number" value={interestRate} onChange={(e) => setInterestRate(Math.max(0, Number(e.target.value)))} placeholder="0" disabled={isProcessing} step="0.1" />
-                      </div>
                     </>
                   )}
 
@@ -1024,21 +1165,72 @@ const PDV = () => {
                 </div>
               </Card>
 
-              <Button className="w-full h-12 text-lg gap-2" disabled={isProcessing || serviceItems.length === 0 || primarySaleTravelers.length === 0 || !selectedCustomer} onClick={handleCreateSale}>
-                {isProcessing ? (
-                  <>
-                    <Icon name="refresh" size={20} className="animate-spin" />
-                    Processando...
-                  </>
-                ) : (
-                  <>
-                    <DollarSign size={20} />
-                    Confirmar Venda
-                  </>
-                )}
-              </Button>
+              <Card className="p-6 lg:h-[500px] flex flex-col">
+                <div className="flex items-start justify-between mb-4 gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center">
+                      <Icon name="receipt" size={20} />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-slate-900">Resumo da Venda</h2>
+                      <p className="text-sm text-slate-600">Totais e forma de pagamento</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-slate-500">Total</p>
+                    <p className="text-base font-bold text-slate-900">{formatPrice(finalValue)}</p>
+                  </div>
+                </div>
+
+                <div className="flex-1 flex flex-col gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3">
+                      <span className="text-sm font-semibold text-slate-700">Subtotal</span>
+                      <span className="text-sm font-bold text-slate-900">{formatPrice(subtotal)}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3">
+                      <span className="text-sm font-semibold text-slate-700">Desconto</span>
+                      <span className="text-sm font-bold text-red-600">{discountValue > 0 ? `-${formatPrice(discountValue)}` : formatPrice(0)}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3">
+                      <span className="text-sm font-semibold text-slate-700">Acréscimo</span>
+                      <span className="text-sm font-bold text-green-700">{additionValue > 0 ? `+${formatPrice(additionValue)}` : formatPrice(0)}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3">
+                      <span className="text-sm font-semibold text-slate-700">Forma de Pagamento</span>
+                      <span className="text-sm font-bold text-slate-900">{paymentMethodLabel}</span>
+                    </div>
+
+                    <div className="flex md:h-20 items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+                      <span className="text-lg font-semibold text-slate-700">Total</span>
+                      <span className="text-lg font-extrabold text-blue-700">{formatPrice(finalValue)}</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    className="w-full h-12 text-lg gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg hover:from-emerald-700 hover:to-emerald-800 hover:shadow-xl mt-auto"
+                    disabled={isProcessing || serviceItems.length === 0 || primarySaleTravelers.length === 0 || !selectedCustomer}
+                    onClick={handleCreateSale}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Icon name="refresh" size={20} className="animate-spin" />
+                        Processando...
+                      </>
+                    ) : (
+                      <>
+                        <DollarSign size={20} />
+                        Confirmar Venda
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </Card>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -1160,6 +1352,101 @@ const PDV = () => {
               Sim
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={adjustmentDialogOpen}
+        onOpenChange={(open) => {
+          setAdjustmentDialogOpen(open);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{adjustmentKind === "discount" ? "Lançar desconto" : "Lançar acréscimo"}</DialogTitle>
+            <DialogDescription>Informe o valor e selecione o tipo ({adjustmentKind === "discount" ? "R$ ou %" : "R$ ou %"}).</DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+
+              const safeValue = Math.max(0, Number.isFinite(adjustmentDraftValue) ? adjustmentDraftValue : 0);
+              const safeType: AdjustmentType = adjustmentDraftType;
+
+              if (adjustmentKind === "discount") {
+                const normalizedValue = safeType === "percent" ? Math.min(100, safeValue) : safeValue;
+                setDiscount(normalizedValue);
+                setDiscountType(safeType);
+              } else {
+                setAddition(safeValue);
+                setAdditionType(safeType);
+              }
+
+              setAdjustmentDialogOpen(false);
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="adjustment-value">Valor</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="adjustment-value"
+                  ref={adjustmentValueInputRef}
+                  type="number"
+                  value={adjustmentDraftValue}
+                  onChange={(e) => {
+                    const next = Math.max(0, Number(e.target.value));
+                    if (adjustmentKind === "discount" && adjustmentDraftType === "percent") {
+                      setAdjustmentDraftValue(Math.min(100, next));
+                      return;
+                    }
+                    setAdjustmentDraftValue(next);
+                  }}
+                  placeholder="0"
+                  disabled={isProcessing}
+                  step={adjustmentDraftType === "percent" ? "0.1" : "0.01"}
+                  className="flex-1"
+                />
+                <Select value={adjustmentDraftType} onValueChange={(value: any) => setAdjustmentDraftType(value)} disabled={isProcessing}>
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fixed">R$</SelectItem>
+                    <SelectItem value="percent">%</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="rounded-lg border bg-slate-50 p-3 text-sm flex items-center justify-between">
+                <span className="text-slate-600">Prévia no total</span>
+                <span className={adjustmentKind === "discount" ? "font-semibold text-red-600" : "font-semibold text-green-700"}>
+                  {adjustmentKind === "discount" ? "-" : "+"}
+                  {formatPrice(computeAdjustmentValue(adjustmentKind, adjustmentDraftValue, adjustmentDraftType))}
+                </span>
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setAdjustmentDraftValue(0);
+                }}
+                disabled={isProcessing}
+              >
+                Zerar
+              </Button>
+              <div className="flex-1" />
+              <Button type="button" variant="outline" onClick={() => setAdjustmentDialogOpen(false)} disabled={isProcessing}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isProcessing}>
+                Aplicar
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

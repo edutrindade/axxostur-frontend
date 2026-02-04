@@ -1,5 +1,5 @@
 export type SaleStatus = "reserved" | "confirmed" | "cancelled";
-export type PaymentMethod = "credit_card" | "debit_card" | "cash" | "check" | "pix";
+export type PaymentMethod = "credit_card" | "debit_card" | "cash" | "check" | "pix" | "bank_slip";
 
 export interface Sale {
   id: string;
