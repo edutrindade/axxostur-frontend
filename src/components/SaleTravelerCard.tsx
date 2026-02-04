@@ -19,7 +19,7 @@ export function SaleTravelerCard({ traveler, onRemove, isLoading = false }: Sale
     <Card className="p-4 flex items-center justify-between hover:shadow-md transition-shadow">
       <div className="flex items-center gap-3 flex-1">
         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-          <Icon name="user" size={20} className="text-blue-600" />
+          <Icon name="users" size={20} className="text-blue-600" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-slate-900 truncate">{traveler.name}</p>

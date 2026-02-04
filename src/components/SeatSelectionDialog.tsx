@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
+import volantePng from "@/assets/img/volante.png";
 
 interface SeatSelectionDialogProps {
   open: boolean;
@@ -74,6 +75,25 @@ function SeatEmpty() {
   return <div aria-hidden className="w-12 h-14" />;
 }
 
+function FrontDoorPanel() {
+  return (
+    <div className="w-12 h-[7.5rem] flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center gap-1 text-slate-500">
+        <div className="w-8 h-14 mt-[-7.5rem] rounded-md border-2 border-slate-300 bg-blue-100" />
+        <span className="text-[9px] font-semibold tracking-wide">PORTA</span>
+      </div>
+    </div>
+  );
+}
+
+function FrontSteeringPanel() {
+  return (
+    <div className="w-12 h-[7.5rem] flex items-center justify-center">
+      <img src={volantePng} alt="Volante" className="w-12 h-12 -rotate-90" draggable={false} />
+    </div>
+  );
+}
+
 function BusLayout({ children, type }: { children: React.ReactNode; type: string }) {
   return (
     <div className="flex justify-center overflow-x-auto">
@@ -113,11 +133,14 @@ function DesktopBusLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="hidden md:flex justify-center overflow-x-auto">
       <div className="relative w-fit">
-        <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-24 h-52 rounded-[999px] bg-gradient-to-b from-sky-200 to-sky-400 opacity-70 blur-[0.5px]" />
-        <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-24 h-52 rounded-[999px] bg-gradient-to-b from-sky-200 to-sky-400 opacity-70 blur-[0.5px]" />
+        <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-20 h-52 rounded-[999px] bg-gradient-to-b from-sky-200 to-sky-400 opacity-70 blur-[0.5px]" />
+        <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-20 h-52 rounded-[999px] bg-gradient-to-b from-sky-200 to-sky-400 opacity-70 blur-[0.5px]" />
         <div className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border-4 border-slate-800 bg-white shadow-sm" />
 
-        <div className="relative bg-white rounded-[28px] border-2 border-slate-200 shadow-lg px-10 py-8">
+        <div className="pointer-events-none absolute -left-10 top-1/2 -translate-y-[80px] z-50 w-4 h-8 rounded-full bg-amber-200 border border-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.9)]" />
+        <div className="pointer-events-none absolute -left-10 top-1/2 translate-y-[50px] z-50 w-4 h-8 rounded-full bg-amber-200 border border-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.9)]" />
+
+        <div className="relative bg-white rounded-[28px] border-2 border-slate-200 shadow-lg pl-20 pr-10 py-8">
           <div className="flex items-center justify-center">{children}</div>
         </div>
       </div>
@@ -293,6 +316,12 @@ function DesktopConventionalBusSeats({
           {shouldAddBathroomColumn && <BathroomColumnPanel className="self-stretch" />}
         </div>
 
+        <div className="absolute -left-14 top-0">
+          <FrontDoorPanel />
+          <div className="h-10" />
+          <FrontSteeringPanel />
+        </div>
+
         {shouldShowBathroomStripe && (
           <div className="absolute -right-16 top-1/2 -translate-y-1/2">
             <div className="h-[7.5rem] w-14 rounded-xl bg-slate-100 border-2 border-slate-300 shadow-sm flex items-center justify-center">
@@ -458,13 +487,13 @@ export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, t
             </div>
           )}
 
-          {selectedSeat && (
+          {/* {selectedSeat && (
             <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-center animate-in fade-in slide-in-from-bottom-2 duration-300">
               <p className="text-sm text-blue-900">
                 Poltrona selecionada: <span className="font-bold text-lg">#{selectedSeat}</span>
               </p>
             </div>
-          )}
+          )} */}
         </div>
 
         <DialogFooter>
