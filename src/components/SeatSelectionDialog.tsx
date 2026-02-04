@@ -87,45 +87,42 @@ function FrontDoorPanel() {
   );
 }
 
-function FrontSteeringPanel() {
+function MiddleDoorPanel() {
   return (
-    <div className="w-12 h-[7.5rem] flex items-center justify-center">
-      <img src={volantePng} alt="Volante" className="w-12 h-12 -rotate-90" draggable={false} />
+    <div data-upright className="w-12 h-[7.5rem] flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center gap-1 text-slate-500">
+        <div className="w-8 h-14 mt-[-7.5rem] rounded-md border-2 border-slate-300 bg-blue-100" />
+        <span className="text-[9px] font-semibold tracking-wide">PORTA</span>
+      </div>
     </div>
   );
 }
 
-function BusLayout({ children, type }: { children: React.ReactNode; type: string }) {
+function DoubleDeckTabs({ value, onChange, secondDisabled }: { value: "first" | "second"; onChange: (value: "first" | "second") => void; secondDisabled: boolean }) {
   return (
-    <div className="flex justify-center overflow-x-auto">
-      <div className="relative bg-gradient-to-b md:bg-gradient-to-r from-slate-100 to-slate-50 rounded-2xl p-4 md:p-6 border-2 border-slate-300 shadow-xl w-fit">
-        <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 mb-4 md:mb-0 md:mr-4 pb-4 md:pb-0 md:pr-4 border-b-2 md:border-b-0 md:border-r-2 border-slate-300">
-          <div className="flex md:flex-col items-center gap-3">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-700 border-4 border-slate-500 flex items-center justify-center shadow-lg">
-              <svg className="w-5 h-5 md:w-6 md:h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M12 14c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5z" />
-              </svg>
-            </div>
-            <div className="md:text-center">
-              <p className="text-xs font-semibold text-slate-600">MOTORISTA</p>
-              <p className="text-[10px] text-slate-500">{type === "conventional" ? "Convencional" : type === "semi_bed" ? "Semi-Leito" : type === "bed" ? "Leito" : "Leito Cama"}</p>
-            </div>
-          </div>
-          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border-4 border-slate-600 bg-slate-700 shadow-inner" />
-        </div>
-
-        <div className="flex flex-col md:flex-row md:items-start">
-          <div className="flex flex-col md:flex-row gap-1.5">{children}</div>
-
-          <div className="mt-4 md:mt-0 md:ml-4 pt-4 md:pt-0 md:pl-4 border-t-2 md:border-t-0 md:border-l-2 border-slate-300 flex md:flex-col items-center justify-center gap-2 text-slate-600">
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 2v2h6V2M5 6h14v12H5V6m10 5h3v4h-3v-4m-8-3a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2z" />
-            </svg>
-            <span className="text-xs font-medium md:[writing-mode:vertical-lr]">BANHEIRO</span>
-          </div>
-        </div>
+    <div className="flex justify-center">
+      <div className="inline-flex rounded-full border border-violet-200 bg-violet-50 p-1">
+        <button type="button" onClick={() => onChange("first")} className={cn("px-6 py-2 text-sm font-semibold rounded-full transition-colors", value === "first" ? "bg-white text-violet-700 shadow-sm" : "text-violet-600 hover:text-violet-700")} aria-selected={value === "first"}>
+          1º Andar
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange("second")}
+          disabled={secondDisabled}
+          className={cn("px-6 py-2 text-sm font-semibold rounded-full transition-colors", value === "second" ? "bg-white text-violet-700 shadow-sm" : "text-violet-600 hover:text-violet-700", secondDisabled && "opacity-40 cursor-not-allowed hover:text-violet-600")}
+          aria-selected={value === "second"}
+        >
+          2º Andar
+        </button>
       </div>
+    </div>
+  );
+}
+
+function FrontSteeringPanel() {
+  return (
+    <div className="w-12 h-[7.5rem] flex items-center justify-center">
+      <img src={volantePng} alt="Volante" className="w-12 h-12 -rotate-90" draggable={false} />
     </div>
   );
 }
@@ -153,7 +150,7 @@ function MobileDesktopBusLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="md:hidden w-full">
       <div className="relative w-full h-[60dvh] overflow-auto overscroll-contain">
-        <div className="relative w-fit origin-top-left [&_[data-seat]]:-rotate-90 [&_.rotate-90]:-rotate-90" style={{ transform: "rotate(90deg) translateY(-100%)" }}>
+        <div className="relative w-fit origin-top-left [&_[data-seat]]:-rotate-90 [&_[data-upright]]:-rotate-90 [&_.rotate-90]:-rotate-90" style={{ transform: "rotate(90deg) translateY(-100%)" }}>
           <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-20 h-52 rounded-[999px] bg-gradient-to-b from-sky-200 to-sky-400 opacity-70 blur-[0.5px]" />
           <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-20 h-52 rounded-[999px] bg-gradient-to-b from-sky-200 to-sky-400 opacity-70 blur-[0.5px]" />
           <div className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border-4 border-slate-800 bg-white shadow-sm" />
@@ -320,6 +317,7 @@ function DoubleDeckerBusSeats({
   selectedSeat,
   onSeatClick,
   busType,
+  floor,
 }: {
   totalSeats: number;
   occupiedSeats: number[];
@@ -327,46 +325,119 @@ function DoubleDeckerBusSeats({
   selectedSeat: number | null;
   onSeatClick: (seat: number) => void;
   busType: "semi_bed" | "bed" | "bed_cabin";
+  floor: "first" | "second";
 }) {
-  const seatsPerRow = busType === "bed_cabin" ? 2 : 3;
-  const rows = Math.ceil(totalSeats / seatsPerRow);
+  void busType;
+
+  const firstFloorCount = Math.min(48, totalSeats);
+  const secondFloorCount = Math.max(0, totalSeats - firstFloorCount);
+  const secondFloorStart = firstFloorCount + 1;
+
+  const buildClickBusColumns = (start: number, end: number) => {
+    const count = Math.max(0, end - start + 1);
+    const cols = Math.ceil(count / 4);
+    const top: Array<[DesktopSeatCell, DesktopSeatCell]> = [];
+    const bottom: Array<[DesktopSeatCell, DesktopSeatCell]> = [];
+
+    for (let i = 0; i < cols; i += 1) {
+      const base = start + i * 4;
+      top.push([base <= end ? base : null, base + 1 <= end ? base + 1 : null]);
+      bottom.push([base + 3 <= end ? base + 3 : null, base + 2 <= end ? base + 2 : null]);
+    }
+
+    return { top, bottom };
+  };
+
+  const buildPairColumns = (bases: number[], order: "ab" | "ba", maxSeat: number) => {
+    const top: Array<[DesktopSeatCell, DesktopSeatCell]> = [];
+    for (const base of bases) {
+      const a = base <= maxSeat ? base : null;
+      const b = base + 1 <= maxSeat ? base + 1 : null;
+      top.push(order === "ab" ? [a, b] : [b, a]);
+    }
+    return top;
+  };
+
+  const floorOneMax = Math.min(firstFloorCount, totalSeats);
+  const floorTwoMax = Math.min(totalSeats, secondFloorStart + secondFloorCount - 1);
 
   return (
-    <>
-      {Array.from({ length: rows }, (_, rowIndex) => {
-        const leftSeats = [rowIndex * seatsPerRow + 1];
-        const rightSeats = busType === "bed_cabin" ? [rowIndex * seatsPerRow + 2] : [rowIndex * seatsPerRow + 2, rowIndex * seatsPerRow + 3];
-
-        return (
-          <div key={rowIndex} className="flex flex-col items-center gap-1.5">
-            <div className="flex gap-1.5">
-              {leftSeats.map((seatNum) => {
-                if (seatNum > totalSeats) return null;
-                const status: SeatStatus = occupiedSeats.includes(seatNum) ? "occupied" : seatNum <= reservedSeats ? "reserved" : selectedSeat === seatNum ? "selected" : "available";
-                return <Seat key={seatNum} number={seatNum} status={status} onClick={() => onSeatClick(seatNum)} />;
-              })}
+    <div className="relative min-w-[52rem]">
+      {floor === "first" ? (
+        <div className="flex items-start gap-6">
+          <div className="flex flex-col">
+            <div className="flex gap-2">
+              {buildPairColumns([3, 7, 11], "ab", floorOneMax).map(([top, bottom], idx) => (
+                <DesktopSeatColumn key={`f1-lt-${idx}`} top={top} bottom={bottom} occupiedSeats={occupiedSeats} reservedSeats={reservedSeats} selectedSeat={selectedSeat} onSeatClick={onSeatClick} totalSeats={totalSeats} />
+              ))}
             </div>
 
-            <div className="h-1 w-14 flex items-center justify-center my-1">
-              <div className="w-full h-1 bg-gradient-to-r from-transparent via-amber-300 to-transparent rounded-full" />
-            </div>
+            <div className="h-10" />
 
-            <div className="flex gap-1.5">
-              {rightSeats.map((seatNum) => {
-                if (seatNum > totalSeats) return null;
-                const status: SeatStatus = occupiedSeats.includes(seatNum) ? "occupied" : seatNum <= reservedSeats ? "reserved" : selectedSeat === seatNum ? "selected" : "available";
-                return <Seat key={seatNum} number={seatNum} status={status} onClick={() => onSeatClick(seatNum)} />;
-              })}
+            <div className="flex gap-2">
+              {buildPairColumns([1, 5, 9, 13], "ba", floorOneMax).map(([top, bottom], idx) => (
+                <DesktopSeatColumn key={`f1-lb-${idx}`} top={top} bottom={bottom} occupiedSeats={occupiedSeats} reservedSeats={reservedSeats} selectedSeat={selectedSeat} onSeatClick={onSeatClick} totalSeats={totalSeats} />
+              ))}
             </div>
           </div>
-        );
-      })}
-    </>
+
+          {/* Porta entre as poltronas 11/12 e 15/16 */}
+          <div className="flex flex-col items-center">
+            <MiddleDoorPanel />
+            <div className="h-10" />
+            <div aria-hidden className="w-12 h-[7.5rem]" />
+          </div>
+
+          <div className="flex flex-col">
+            <div className="flex gap-2">
+              {buildClickBusColumns(15, Math.min(48, floorOneMax)).top.map(([top, bottom], idx) => (
+                <DesktopSeatColumn key={`f1-rt-${idx}`} top={top} bottom={bottom} occupiedSeats={occupiedSeats} reservedSeats={reservedSeats} selectedSeat={selectedSeat} onSeatClick={onSeatClick} totalSeats={totalSeats} />
+              ))}
+            </div>
+
+            <div className="h-10" />
+
+            <div className="flex gap-2">
+              {buildClickBusColumns(15, Math.min(48, floorOneMax)).bottom.map(([top, bottom], idx) => (
+                <DesktopSeatColumn key={`f1-rb-${idx}`} top={top} bottom={bottom} occupiedSeats={occupiedSeats} reservedSeats={reservedSeats} selectedSeat={selectedSeat} onSeatClick={onSeatClick} totalSeats={totalSeats} />
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-end w-full">
+          <div className="flex flex-col">
+            <div className="flex gap-2">
+              {buildPairColumns([51, 55, 59, 63], "ab", floorTwoMax).map(([top, bottom], idx) => (
+                <DesktopSeatColumn key={`f2-t-${idx}`} top={top} bottom={bottom} occupiedSeats={occupiedSeats} reservedSeats={reservedSeats} selectedSeat={selectedSeat} onSeatClick={onSeatClick} totalSeats={totalSeats} />
+              ))}
+            </div>
+
+            <div className="h-10" />
+
+            <div className="flex gap-2">
+              {buildPairColumns([49, 53, 57, 61], "ba", floorTwoMax).map(([top, bottom], idx) => (
+                <DesktopSeatColumn key={`f2-b-${idx}`} top={top} bottom={bottom} occupiedSeats={occupiedSeats} reservedSeats={reservedSeats} selectedSeat={selectedSeat} onSeatClick={onSeatClick} totalSeats={totalSeats} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* No 2º andar não mostra porta nem volante */}
+      {floor === "first" && (
+        <div className="absolute -left-14 top-0 bottom-0 flex flex-col items-center">
+          <div className="flex-1" />
+          <FrontSteeringPanel />
+        </div>
+      )}
+    </div>
   );
 }
 
 export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, totalSeats = 40, occupiedSeats = [], reservedSeats = 0, hasBathroom = false, busType = "conventional" }: SeatSelectionDialogProps) {
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
+  const [doubleDeckFloor, setDoubleDeckFloor] = useState<"first" | "second">("first");
   const normalizedReservedSeats = Math.min(Math.max(0, reservedSeats), totalSeats);
 
   const handleSubmit = () => {
@@ -393,12 +464,14 @@ export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, t
   }
   const availableCount = Math.max(0, totalSeats - unavailableSeats.size);
   const isDoubleDecker = busType !== "conventional";
+  const doubleDeckHasSecond = totalSeats > 48;
 
   return (
     <Dialog
       open={open}
       onOpenChange={(open) => {
         if (!open) setSelectedSeat(null);
+        if (!open) setDoubleDeckFloor("first");
         onOpenChange(open);
       }}
     >
@@ -441,11 +514,13 @@ export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, t
             </div>
           </div>
 
+          {isDoubleDecker && <DoubleDeckTabs value={doubleDeckFloor} onChange={setDoubleDeckFloor} secondDisabled={!doubleDeckHasSecond} />}
+
           <div className="md:hidden">
             {isDoubleDecker ? (
-              <BusLayout type={busType}>
-                <DoubleDeckerBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} busType={busType} />
-              </BusLayout>
+              <MobileDesktopBusLayout>
+                <DoubleDeckerBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} busType={busType} floor={doubleDeckFloor} />
+              </MobileDesktopBusLayout>
             ) : (
               <MobileDesktopBusLayout>
                 <DesktopConventionalBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} hasBathroom={hasBathroom} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} variant="mobile" />
@@ -459,9 +534,9 @@ export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, t
             </DesktopBusLayout>
           ) : (
             <div className="hidden md:block">
-              <BusLayout type={busType}>
-                <DoubleDeckerBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} busType={busType} />
-              </BusLayout>
+              <DesktopBusLayout>
+                <DoubleDeckerBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} busType={busType} floor={doubleDeckFloor} />
+              </DesktopBusLayout>
             </div>
           )}
 
