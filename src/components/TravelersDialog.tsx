@@ -1,10 +1,11 @@
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, UsersRound } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Plus, UsersRound, Pencil, Trash2 } from "lucide-react";
 import { formatCpf, formatPhone } from "@/utils/format";
 import type { Traveler } from "@/types/traveler";
 
@@ -85,12 +86,23 @@ export const TravelersDialog = ({ open, onOpenChange, selectedTravelers, editing
                       <TableCell className="text-slate-600">{traveler.phone ? formatPhone(traveler.phone) : "-"}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button size="sm" variant="outline" onClick={() => onSelectTraveler(traveler)}>
-                            Editar
-                          </Button>
-                          <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700" onClick={() => onRemoveTraveler(traveler.id)}>
-                            Remover
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="icon" variant="outline" onClick={() => onSelectTraveler(traveler)} aria-label="Editar viajante">
+                                <Pencil size={18} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Editar viajante</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="icon" variant="ghost" className="text-red-600 hover:text-red-700" onClick={() => onRemoveTraveler(traveler.id)} aria-label="Remover viajante">
+                                <Trash2 size={18} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Remover viajante</TooltipContent>
+                          </Tooltip>
                         </div>
                       </TableCell>
                     </TableRow>
