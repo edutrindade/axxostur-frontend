@@ -1119,7 +1119,17 @@ const PDV = () => {
         isLoading={travelerCreateSaving}
       />
 
-      <SeatSelectionDialog open={seatDialogOpen} onOpenChange={setSeatDialogOpen} onSubmit={handleSeatSelected} isLoading={isProcessing} occupiedSeats={occupiedSeats} totalSeats={activeServiceTrip?.bus?.totalSeats || 40} busType={activeServiceTrip?.bus?.type || "conventional"} />
+      <SeatSelectionDialog
+        open={seatDialogOpen}
+        onOpenChange={setSeatDialogOpen}
+        onSubmit={handleSeatSelected}
+        isLoading={isProcessing}
+        occupiedSeats={occupiedSeats}
+        reservedSeats={activeServiceTrip?.reservedSeats ?? 0}
+        totalSeats={activeServiceTrip?.bus?.totalSeats || 40}
+        busType={activeServiceTrip?.bus?.type || "conventional"}
+        hasBathroom={activeServiceTrip?.bus?.hasBathroom ?? false}
+      />
 
       <Dialog open={duplicateServiceDialogOpen} onOpenChange={setDuplicateServiceDialogOpen}>
         <DialogContent>

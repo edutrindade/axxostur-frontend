@@ -5,6 +5,7 @@ export interface Bus {
   companyId: string;
   totalSeats: number;
   type: "conventional" | "semi_bed" | "bed" | "bed_cabin";
+  hasBathroom?: boolean;
   active: boolean;
   createdAt: string;
   updatedAt: string;

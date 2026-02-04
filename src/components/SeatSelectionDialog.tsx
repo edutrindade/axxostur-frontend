@@ -11,10 +11,12 @@ interface SeatSelectionDialogProps {
   isLoading: boolean;
   totalSeats?: number;
   occupiedSeats?: number[];
+  reservedSeats?: number;
+  hasBathroom?: boolean;
   busType?: "conventional" | "semi_bed" | "bed" | "bed_cabin";
 }
 
-type SeatStatus = "available" | "occupied" | "selected";
+type SeatStatus = "available" | "occupied" | "reserved" | "selected";
 
 interface SeatProps {
   number: number;
@@ -23,7 +25,7 @@ interface SeatProps {
 }
 
 function Seat({ number, status, onClick }: SeatProps) {
-  const isDisabled = status === "occupied";
+  const isDisabled = status === "occupied" || status === "reserved";
 
   return (
     <button
@@ -34,6 +36,7 @@ function Seat({ number, status, onClick }: SeatProps) {
         "flex flex-col items-center justify-center gap-0.5 text-xs font-semibold shadow-sm",
         status === "available" && "bg-emerald-100 text-emerald-700 border-2 border-emerald-300 hover:bg-emerald-200 hover:border-emerald-400 focus:ring-emerald-500",
         status === "occupied" && "bg-gray-200 text-gray-400 border-2 border-gray-300 cursor-not-allowed opacity-60",
+        status === "reserved" && "bg-slate-200 text-slate-500 border-2 border-slate-300 cursor-not-allowed opacity-80",
         status === "selected" && "bg-blue-600 text-white border-2 border-blue-700 ring-2 ring-blue-300 scale-105 hover:bg-blue-700 focus:ring-blue-500",
       )}
     >
@@ -42,9 +45,9 @@ function Seat({ number, status, onClick }: SeatProps) {
         <circle cx="12" cy="7" r="4" />
       </svg>
       <span className="text-[10px] font-bold">{number}</span>
-      {status === "occupied" && (
+      {(status === "occupied" || status === "reserved") && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <svg className="w-6 h-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+          <svg className={cn("w-6 h-6", status === "occupied" ? "text-red-500" : "text-slate-500")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -122,8 +125,15 @@ function DesktopBusLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ConventionalBusSeats({ totalSeats, occupiedSeats, selectedSeat, onSeatClick }: { totalSeats: number; occupiedSeats: number[]; selectedSeat: number | null; onSeatClick: (seat: number) => void }) {
+function ConventionalBusSeats({ totalSeats, occupiedSeats, reservedSeats, selectedSeat, onSeatClick }: { totalSeats: number; occupiedSeats: number[]; reservedSeats: number; selectedSeat: number | null; onSeatClick: (seat: number) => void }) {
   const rows = Math.ceil(totalSeats / 4);
+
+  const getStatus = (seatNum: number): SeatStatus => {
+    if (occupiedSeats.includes(seatNum)) return "occupied";
+    if (seatNum <= reservedSeats) return "reserved";
+    if (selectedSeat === seatNum) return "selected";
+    return "available";
+  };
 
   return (
     <>
@@ -136,13 +146,13 @@ function ConventionalBusSeats({ totalSeats, occupiedSeats, selectedSeat, onSeatC
         return (
           <div key={rowIndex} className="flex flex-col gap-1.5">
             <div className="flex gap-1.5">
-              {seat3 <= totalSeats && <Seat number={seat3} status={occupiedSeats.includes(seat3) ? "occupied" : selectedSeat === seat3 ? "selected" : "available"} onClick={() => onSeatClick(seat3)} />}
-              {seat4 <= totalSeats && <Seat number={seat4} status={occupiedSeats.includes(seat4) ? "occupied" : selectedSeat === seat4 ? "selected" : "available"} onClick={() => onSeatClick(seat4)} />}
+              {seat3 <= totalSeats && <Seat number={seat3} status={getStatus(seat3)} onClick={() => onSeatClick(seat3)} />}
+              {seat4 <= totalSeats && <Seat number={seat4} status={getStatus(seat4)} onClick={() => onSeatClick(seat4)} />}
             </div>
 
             <div className="flex gap-1.5">
-              {seat1 <= totalSeats && <Seat number={seat1} status={occupiedSeats.includes(seat1) ? "occupied" : selectedSeat === seat1 ? "selected" : "available"} onClick={() => onSeatClick(seat1)} />}
-              {seat2 <= totalSeats && <Seat number={seat2} status={occupiedSeats.includes(seat2) ? "occupied" : selectedSeat === seat2 ? "selected" : "available"} onClick={() => onSeatClick(seat2)} />}
+              {seat1 <= totalSeats && <Seat number={seat1} status={getStatus(seat1)} onClick={() => onSeatClick(seat1)} />}
+              {seat2 <= totalSeats && <Seat number={seat2} status={getStatus(seat2)} onClick={() => onSeatClick(seat2)} />}
             </div>
           </div>
         );
@@ -151,14 +161,60 @@ function ConventionalBusSeats({ totalSeats, occupiedSeats, selectedSeat, onSeatC
   );
 }
 
-type DesktopSeatCell = number | "blocked" | null;
+type DesktopSeatCell = number | "blocked" | "bathroom" | null;
 
-function DesktopSeatColumn({ top, bottom, occupiedSeats, selectedSeat, onSeatClick, totalSeats }: { top: DesktopSeatCell; bottom: DesktopSeatCell; occupiedSeats: number[]; selectedSeat: number | null; onSeatClick: (seat: number) => void; totalSeats: number }) {
+function BathroomIcon({ className }: { className?: string }) {
+  return (
+    <svg className={cn("w-4 h-4", className)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 3h7a2 2 0 0 1 2 2v8" />
+      <path d="M7 11h9" />
+      <path d="M7 7h4" />
+      <path d="M8 21h8" />
+      <path d="M9 21v-3" />
+      <path d="M15 21v-3" />
+      <path d="M5 11v3a6 6 0 0 0 6 6h2a6 6 0 0 0 6-6v-3" />
+    </svg>
+  );
+}
+
+function BathroomColumnPanel({ className }: { className?: string }) {
+  return (
+    <div className={cn("w-12 rounded-xl bg-slate-100 border-2 border-slate-300 shadow-sm flex items-center justify-center", className)}>
+      <div className="flex items-center gap-2 rotate-90 text-slate-700">
+        <BathroomIcon />
+        <span className="text-xs font-semibold tracking-wide">BANHEIRO</span>
+      </div>
+    </div>
+  );
+}
+
+function DesktopSeatColumn({
+  top,
+  bottom,
+  occupiedSeats,
+  reservedSeats,
+  selectedSeat,
+  onSeatClick,
+  totalSeats,
+}: {
+  top: DesktopSeatCell;
+  bottom: DesktopSeatCell;
+  occupiedSeats: number[];
+  reservedSeats: number;
+  selectedSeat: number | null;
+  onSeatClick: (seat: number) => void;
+  totalSeats: number;
+}) {
+  if (top === "bathroom" && bottom === "bathroom") {
+    return <BathroomColumnPanel className="h-[7.5rem]" />;
+  }
+
   const renderCell = (cell: DesktopSeatCell) => {
     if (cell === null) return <SeatEmpty />;
     if (cell === "blocked") return <SeatBlocked />;
+    if (cell === "bathroom") return <BathroomColumnPanel className="h-14" />;
     if (cell > totalSeats) return <SeatEmpty />;
-    const status: SeatStatus = occupiedSeats.includes(cell) ? "occupied" : selectedSeat === cell ? "selected" : "available";
+    const status: SeatStatus = occupiedSeats.includes(cell) ? "occupied" : cell <= reservedSeats ? "reserved" : selectedSeat === cell ? "selected" : "available";
     return <Seat number={cell} status={status} onClick={() => onSeatClick(cell)} />;
   };
 
@@ -170,59 +226,103 @@ function DesktopSeatColumn({ top, bottom, occupiedSeats, selectedSeat, onSeatCli
   );
 }
 
-function DesktopConventionalBusSeats({ totalSeats, occupiedSeats, selectedSeat, onSeatClick }: { totalSeats: number; occupiedSeats: number[]; selectedSeat: number | null; onSeatClick: (seat: number) => void }) {
-  const top: Array<[DesktopSeatCell, DesktopSeatCell]> = [
-    [3, 4],
-    [7, 8],
-    [11, 12],
-    [15, 16],
-    [19, 20],
-    [23, 24],
-    [27, 28],
-    [31, 32],
-    [35, 36],
-    [39, 40],
-    [43, 44],
-    [47, 48],
-  ];
+function DesktopConventionalBusSeats({
+  totalSeats,
+  occupiedSeats,
+  reservedSeats,
+  hasBathroom,
+  selectedSeat,
+  onSeatClick,
+}: {
+  totalSeats: number;
+  occupiedSeats: number[];
+  reservedSeats: number;
+  hasBathroom: boolean;
+  selectedSeat: number | null;
+  onSeatClick: (seat: number) => void;
+}) {
+  const rows = Math.ceil(totalSeats / 4);
 
-  const bottom: Array<[DesktopSeatCell, DesktopSeatCell]> = [
-    [1, 2],
-    [6, 5],
-    [10, 9],
-    [14, 13],
-    [18, 17],
-    [22, 21],
-    [26, 25],
-    [30, 29],
-    [34, 33],
-    [38, 37],
-    [42, 41],
-    [46, 45],
-  ];
+  const top: Array<[DesktopSeatCell, DesktopSeatCell]> = Array.from({ length: rows }, (_, rowIndex) => {
+    const seat3 = rowIndex * 4 + 3;
+    const seat4 = rowIndex * 4 + 4;
+    return [seat3 <= totalSeats ? seat3 : null, seat4 <= totalSeats ? seat4 : null];
+  });
+
+  const bottom: Array<[DesktopSeatCell, DesktopSeatCell]> = Array.from({ length: rows }, (_, rowIndex) => {
+    const seat1 = rowIndex * 4 + 1;
+    const seat2 = rowIndex * 4 + 2;
+    return [seat2 <= totalSeats ? seat2 : null, seat1 <= totalSeats ? seat1 : null];
+  });
+
+  const isDivisibleBy4 = totalSeats % 4 === 0;
+
+  if (hasBathroom && !isDivisibleBy4) {
+    const lastTopIndex = top.length - 1;
+    const [lastTopA, lastTopB] = top[lastTopIndex] ?? [null, null];
+    if (lastTopA === null && lastTopB === null) {
+      top[lastTopIndex] = ["bathroom", "bathroom"];
+    }
+  }
+
+  const shouldAddBathroomColumn = hasBathroom && rows % 2 === 1 && isDivisibleBy4;
+  const shouldShowBathroomStripe = hasBathroom && rows % 2 === 0;
 
   return (
     <div className="hidden md:flex flex-col items-center">
-      <div className="flex items-start gap-8">
-        <div className="flex gap-2">
-          {top.map(([top, bottom], idx) => (
-            <DesktopSeatColumn key={`tl-${idx}`} top={top} bottom={bottom} occupiedSeats={occupiedSeats} selectedSeat={selectedSeat} onSeatClick={onSeatClick} totalSeats={totalSeats} />
-          ))}
+      <div className={cn("relative", shouldShowBathroomStripe && "pr-16")}>
+        <div className="flex items-stretch gap-2">
+          <div>
+            <div className="flex items-start gap-8">
+              <div className="flex gap-2">
+                {top.map(([top, bottom], idx) => (
+                  <DesktopSeatColumn key={`tl-${idx}`} top={top} bottom={bottom} occupiedSeats={occupiedSeats} reservedSeats={reservedSeats} selectedSeat={selectedSeat} onSeatClick={onSeatClick} totalSeats={totalSeats} />
+                ))}
+              </div>
+            </div>
+
+            <div className="h-10" />
+
+            <div className="flex items-start gap-2">
+              {bottom.map(([top, bottom], idx) => (
+                <DesktopSeatColumn key={`b-${idx}`} top={top} bottom={bottom} occupiedSeats={occupiedSeats} reservedSeats={reservedSeats} selectedSeat={selectedSeat} onSeatClick={onSeatClick} totalSeats={totalSeats} />
+              ))}
+            </div>
+          </div>
+
+          {shouldAddBathroomColumn && <BathroomColumnPanel className="self-stretch" />}
         </div>
-      </div>
 
-      <div className="h-10" />
-
-      <div className="flex items-start gap-2">
-        {bottom.map(([top, bottom], idx) => (
-          <DesktopSeatColumn key={`b-${idx}`} top={top} bottom={bottom} occupiedSeats={occupiedSeats} selectedSeat={selectedSeat} onSeatClick={onSeatClick} totalSeats={totalSeats} />
-        ))}
+        {shouldShowBathroomStripe && (
+          <div className="absolute -right-16 top-1/2 -translate-y-1/2">
+            <div className="h-[7.5rem] w-14 rounded-xl bg-slate-100 border-2 border-slate-300 shadow-sm flex items-center justify-center">
+              <div className="flex items-center gap-2 rotate-90 text-slate-700">
+                <BathroomIcon />
+                <span className="text-xs font-semibold tracking-wide">BANHEIRO</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function DoubleDeckerBusSeats({ totalSeats, occupiedSeats, selectedSeat, onSeatClick, busType }: { totalSeats: number; occupiedSeats: number[]; selectedSeat: number | null; onSeatClick: (seat: number) => void; busType: "semi_bed" | "bed" | "bed_cabin" }) {
+function DoubleDeckerBusSeats({
+  totalSeats,
+  occupiedSeats,
+  reservedSeats,
+  selectedSeat,
+  onSeatClick,
+  busType,
+}: {
+  totalSeats: number;
+  occupiedSeats: number[];
+  reservedSeats: number;
+  selectedSeat: number | null;
+  onSeatClick: (seat: number) => void;
+  busType: "semi_bed" | "bed" | "bed_cabin";
+}) {
   const seatsPerRow = busType === "bed_cabin" ? 2 : 3;
   const rows = Math.ceil(totalSeats / seatsPerRow);
 
@@ -237,7 +337,7 @@ function DoubleDeckerBusSeats({ totalSeats, occupiedSeats, selectedSeat, onSeatC
             <div className="flex gap-1.5">
               {leftSeats.map((seatNum) => {
                 if (seatNum > totalSeats) return null;
-                const status: SeatStatus = occupiedSeats.includes(seatNum) ? "occupied" : selectedSeat === seatNum ? "selected" : "available";
+                const status: SeatStatus = occupiedSeats.includes(seatNum) ? "occupied" : seatNum <= reservedSeats ? "reserved" : selectedSeat === seatNum ? "selected" : "available";
                 return <Seat key={seatNum} number={seatNum} status={status} onClick={() => onSeatClick(seatNum)} />;
               })}
             </div>
@@ -249,7 +349,7 @@ function DoubleDeckerBusSeats({ totalSeats, occupiedSeats, selectedSeat, onSeatC
             <div className="flex gap-1.5">
               {rightSeats.map((seatNum) => {
                 if (seatNum > totalSeats) return null;
-                const status: SeatStatus = occupiedSeats.includes(seatNum) ? "occupied" : selectedSeat === seatNum ? "selected" : "available";
+                const status: SeatStatus = occupiedSeats.includes(seatNum) ? "occupied" : seatNum <= reservedSeats ? "reserved" : selectedSeat === seatNum ? "selected" : "available";
                 return <Seat key={seatNum} number={seatNum} status={status} onClick={() => onSeatClick(seatNum)} />;
               })}
             </div>
@@ -260,8 +360,9 @@ function DoubleDeckerBusSeats({ totalSeats, occupiedSeats, selectedSeat, onSeatC
   );
 }
 
-export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, totalSeats = 40, occupiedSeats = [], busType = "conventional" }: SeatSelectionDialogProps) {
+export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, totalSeats = 40, occupiedSeats = [], reservedSeats = 0, hasBathroom = false, busType = "conventional" }: SeatSelectionDialogProps) {
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
+  const normalizedReservedSeats = Math.min(Math.max(0, reservedSeats), totalSeats);
 
   const handleSubmit = () => {
     if (selectedSeat) {
@@ -271,12 +372,21 @@ export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, t
   };
 
   const handleSeatClick = (seatNum: number) => {
-    if (!occupiedSeats.includes(seatNum)) {
+    if (!occupiedSeats.includes(seatNum) && seatNum > normalizedReservedSeats) {
       setSelectedSeat(seatNum === selectedSeat ? null : seatNum);
     }
   };
 
-  const availableCount = totalSeats - occupiedSeats.length;
+  const unavailableSeats = new Set<number>();
+  for (let i = 1; i <= normalizedReservedSeats; i += 1) {
+    unavailableSeats.add(i);
+  }
+  for (const seatNum of occupiedSeats) {
+    if (seatNum >= 1 && seatNum <= totalSeats) {
+      unavailableSeats.add(seatNum);
+    }
+  }
+  const availableCount = Math.max(0, totalSeats - unavailableSeats.size);
   const isDoubleDecker = busType !== "conventional";
 
   return (
@@ -289,9 +399,9 @@ export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, t
     >
       <DialogContent className="w-full max-w-2xl sm:max-w-3xl md:max-w-7xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Selecione sua Poltrona</DialogTitle>
+          <DialogTitle className="text-2xl">Selecione a Poltrona</DialogTitle>
           <DialogDescription>
-            Escolha a poltrona desejada no mapa abaixo. {availableCount} {availableCount === 1 ? "poltrona disponível" : "poltronas disponíveis"}.
+            {availableCount} {availableCount === 1 ? "poltrona disponível" : "poltronas disponíveis"}. {reservedSeats > 0 && `Para esta viagem, ${normalizedReservedSeats} poltronas estão reservadas.`}
           </DialogDescription>
         </DialogHeader>
 
@@ -329,21 +439,21 @@ export function SeatSelectionDialog({ open, onOpenChange, onSubmit, isLoading, t
           <div className="md:hidden">
             <BusLayout type={busType}>
               {isDoubleDecker ? (
-                <DoubleDeckerBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} busType={busType} />
+                <DoubleDeckerBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} busType={busType} />
               ) : (
-                <ConventionalBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} />
+                <ConventionalBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} />
               )}
             </BusLayout>
           </div>
 
           {!isDoubleDecker ? (
             <DesktopBusLayout>
-              <DesktopConventionalBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} />
+              <DesktopConventionalBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} hasBathroom={hasBathroom} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} />
             </DesktopBusLayout>
           ) : (
             <div className="hidden md:block">
               <BusLayout type={busType}>
-                <DoubleDeckerBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} busType={busType} />
+                <DoubleDeckerBusSeats totalSeats={totalSeats} occupiedSeats={occupiedSeats} reservedSeats={normalizedReservedSeats} selectedSeat={selectedSeat} onSeatClick={handleSeatClick} busType={busType} />
               </BusLayout>
             </div>
           )}
